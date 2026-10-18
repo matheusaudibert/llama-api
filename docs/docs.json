@@ -27,7 +27,7 @@
           },
           {
             "group": "Deploy",
-            "pages": ["deploy/coolify", "deploy/local"]
+            "pages": ["deploy/producao", "deploy/local"]
           }
         ]
       },
@@ -47,6 +47,7 @@
               "DELETE /auth/{session_id}",
               "GET /accounts/{session_id}/summary",
               "GET /accounts/{session_id}/locker",
+              "POST /render/{category}",
               "GET /health"
             ]
           }

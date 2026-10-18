@@ -398,6 +398,69 @@
           }
         }
       }
+    },
+    "/render/{category}": {
+      "post": {
+        "tags": [
+          "Imagens"
+        ],
+        "summary": "Imagem do locker",
+        "description": "Gera um PNG com os itens de uma categoria, no estilo dos checkers. `mythics` junta os itens míticos de todas as categorias. Não exige sessão: envie os itens salvos do `/locker`.",
+        "operationId": "render_locker_render__category__post",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "category",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/RenderCategory"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PNG com os itens da categoria",
+            "content": {
+              "image/png": {}
+            }
+          },
+          "401": {
+            "description": "API key ausente ou inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Nenhum item da categoria na lista enviada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -619,7 +682,7 @@
           "is_mythic": {
             "type": "boolean",
             "title": "Is Mythic",
-            "description": "Considerado OG/raro pelo checker, independente da raridade no jogo."
+            "description": "Item raro/OG: de uma lista de raros que não volta à loja há 2 anos, ou com o estilo exclusivo dos donos originais."
           },
           "in_catalog": {
             "type": "boolean",
@@ -1034,6 +1097,67 @@
         },
         "type": "object",
         "title": "PastSeason"
+      },
+      "RenderCategory": {
+        "type": "string",
+        "enum": [
+          "skins",
+          "backpacks",
+          "pickaxes",
+          "gliders",
+          "emotes",
+          "mythics"
+        ],
+        "title": "RenderCategory"
+      },
+      "RenderItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,128}$",
+            "title": "Id",
+            "description": "ID do cosmético, como vem no `/locker`."
+          },
+          "owned_styles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Owned Styles",
+            "description": "Estilos desbloqueados. Usado para reconhecer os OGs."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "RenderItem"
+      },
+      "RenderRequest": {
+        "properties": {
+          "display_name": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Display Name",
+            "description": "Nick da conta, exibido no rodapé."
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RenderItem"
+            },
+            "type": "array",
+            "maxItems": 5000,
+            "title": "Items",
+            "description": "Itens da conta. Pode mandar os itens do `/locker` direto: campos extras são ignorados e só entram os da categoria pedida."
+          }
+        },
+        "type": "object",
+        "required": [
+          "display_name",
+          "items"
+        ],
+        "title": "RenderRequest"
       },
       "ValidationError": {
         "properties": {

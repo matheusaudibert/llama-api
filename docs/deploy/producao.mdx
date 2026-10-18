@@ -1,0 +1,111 @@
+---
+title: "Deploy em produção"
+description: "Coloque a API no ar em qualquer servidor ou plataforma que rode containers Docker."
+icon: "server"
+---
+
+O repositório já tem um `Dockerfile` pronto. Qualquer lugar que construa ou rode uma imagem Docker serve: uma VPS sua, uma plataforma como Railway, Render ou Fly.io, ou um painel self-hosted como Coolify, Dokploy ou CapRover.
+
+## Pré-requisitos
+
+- Um servidor ou plataforma que rode containers Docker
+- Este repositório no seu GitHub (para plataformas que fazem o build a partir do repositório)
+- Opcional: um domínio ou subdomínio, por exemplo `api.seudominio.com`, para servir a API com HTTPS
+
+<Steps>
+  <Step title="Gere a API key">
+    ```bash
+    python -c "import secrets; print(secrets.token_urlsafe(32))"
+    ```
+
+    Guarde o valor. Use a mesma chave no `.env` do seu bot.
+  </Step>
+  <Step title="Construa e rode a imagem">
+    Em uma plataforma que faz o build pelo GitHub, aponte para o repositório, branch `main`, e escolha **Dockerfile** como método de build (`/Dockerfile`, contexto `/`).
+
+    Em um servidor com Docker, rode:
+
+    ```bash
+    git clone https://github.com/seu-usuario/fortnite-account-api.git
+    cd fortnite-account-api
+    docker build -t fortnite-account-api .
+    docker run -d --name fortnite-account-api \
+      -p 127.0.0.1:8000:8000 \
+      -e API_KEY="cole-a-chave-aqui" \
+      --restart unless-stopped \
+      fortnite-account-api
+    ```
+
+    O container escuta na porta `8000`.
+  </Step>
+  <Step title="Defina as variáveis de ambiente">
+    | Variável | Obrigatória | Padrão | Descrição |
+    |---|---|---|---|
+    | `API_KEY` | Sim | | Chave que o bot envia no header `X-API-Key` |
+    | `CATALOG_REFRESH_SECONDS` | Não | `21600` | Intervalo de recarga do catálogo do fortnite-api.com |
+
+    <Warning>
+      Sem `API_KEY` a API não inicia.
+    </Warning>
+  </Step>
+  <Step title="Configure HTTPS">
+    Coloque a API atrás de um proxy reverso com TLS. A maioria das plataformas gerenciadas já faz isso ao configurar um domínio. Em uma VPS, use Caddy, Nginx ou Traefik. Exemplo com Caddy, que emite o certificado automaticamente:
+
+    ```text Caddyfile
+    api.seudominio.com {
+        reverse_proxy 127.0.0.1:8000
+    }
+    ```
+
+    O uvicorn já roda com `--proxy-headers`, então os headers `X-Forwarded-*` do proxy são respeitados.
+
+    <Tip>
+      Se o bot roda no mesmo servidor ou na mesma rede Docker, ele pode chamar a API direto por `http://fortnite-account-api:8000` sem expô-la na internet.
+    </Tip>
+  </Step>
+  <Step title="Configure o healthcheck">
+    Se a plataforma pedir um healthcheck, use:
+
+    - **Path**: `/health`
+    - **Port**: `8000`
+
+    O endpoint `/health` não exige API key. O `Dockerfile` também declara um `HEALTHCHECK` com `curl`, que o Docker e a maioria das plataformas reconhecem.
+  </Step>
+  <Step title="Teste">
+    No primeiro start, espere nos logs:
+
+    ```text
+    Catalog loaded: 16599 cosmetics, 1018 banners
+    Application startup complete.
+    ```
+
+    ```bash
+    curl https://api.seudominio.com/health
+    ```
+
+    ```json Resposta
+    { "status": "ok", "cosmetics_loaded": 16599, "active_sessions": 0 }
+    ```
+  </Step>
+</Steps>
+
+## Atualizações
+
+As sessões ficam em memória, então **reiniciar o container desconecta quem estiver logado naquele momento**. Isso vale para deploys automáticos a cada push. Prefira atualizar quando o bot estiver com pouco uso.
+
+Em um servidor com Docker, para atualizar:
+
+```bash
+git pull
+docker build -t fortnite-account-api .
+docker rm -f fortnite-account-api
+# rode o mesmo docker run do passo 2
+```
+
+## Não escale horizontalmente
+
+Mantenha **uma réplica** e **um worker**. Com duas instâncias, um login criado numa não existe na outra e o bot recebe `404` aleatoriamente. O `CMD` do Dockerfile já roda o uvicorn com um único worker. Em plataformas com autoscaling, fixe o número de instâncias em 1.
+
+## Recursos
+
+A API usa pouca memória: cerca de 120 MB com o catálogo carregado. Uma instância com 512 MB de RAM é suficiente, inclusive dividindo o servidor com o seu bot.

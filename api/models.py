@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -65,7 +66,7 @@ class Cosmetic(BaseModel):
     images: CosmeticImages
     owned_styles: list[str] = Field(description="Tags dos estilos que o jogador desbloqueou.")
     is_exclusive: bool = Field(description="Faz parte da lista de itens exclusivos (Renegade Raider, Ghoul Trooper…).")
-    is_mythic: bool = Field(description="Considerado OG/raro pelo checker, independente da raridade no jogo.")
+    is_mythic: bool = Field(description="Item raro/OG: de uma lista de raros que não volta à loja há 2 anos, ou com o estilo exclusivo dos donos originais.")
     in_catalog: bool = Field(description="False quando o fortnite-api ainda não tem dados deste item.")
 
 
@@ -92,6 +93,28 @@ class Locker(BaseModel):
     sprays: list[Cosmetic]
     others: list[Cosmetic]
     banners: list[Cosmetic]
+
+
+class RenderCategory(str, Enum):
+    skins = "skins"
+    backpacks = "backpacks"
+    pickaxes = "pickaxes"
+    gliders = "gliders"
+    emotes = "emotes"
+    mythics = "mythics"
+
+
+class RenderItem(BaseModel):
+    id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,128}$", description="ID do cosmético, como vem no `/locker`.")
+    owned_styles: list[str] = Field(default_factory=list, description="Estilos desbloqueados. Usado para reconhecer os OGs.")
+
+
+class RenderRequest(BaseModel):
+    display_name: str = Field(min_length=1, max_length=64, description="Nick da conta, exibido no rodapé.")
+    items: list[RenderItem] = Field(
+        max_length=5000,
+        description="Itens da conta. Pode mandar os itens do `/locker` direto: campos extras são ignorados e só entram os da categoria pedida.",
+    )
 
 
 class Health(BaseModel):

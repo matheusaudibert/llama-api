@@ -11,6 +11,7 @@ API HTTP para logar em contas Epic Games (device code flow) e ler os dados do Fo
 | `DELETE` | `/auth/{session_id}` | Encerra a sessão e invalida o token na Epic |
 | `GET` | `/accounts/{session_id}/summary` | Dados da conta, V-Bucks, plataformas e estatísticas |
 | `GET` | `/accounts/{session_id}/locker` | Todos os cosméticos, por categoria e ordenados por raridade |
+| `POST` | `/render/{category}` | PNG do locker por categoria (`skins`, `backpacks`, `pickaxes`, `gliders`, `emotes`, `mythics`) |
 | `GET` | `/health` | Healthcheck (sem API key) |
 
 Todos os endpoints, menos `/health`, exigem o header `X-API-Key`.
@@ -33,7 +34,7 @@ Swagger UI em `http://localhost:8000/docs`.
 
 ## Documentação
 
-A documentação completa (guias, deploy no Coolify, exemplo com discord.js e referência da API) fica em [`docs/`](docs) e é publicada com o [Mintlify](https://mintlify.com).
+A documentação completa (guias, deploy com Docker, exemplo com discord.js e referência da API) fica em [`docs/`](docs) e é publicada com o [Mintlify](https://mintlify.com).
 
 Para rodar a documentação localmente:
 
@@ -52,5 +53,3 @@ python scripts/export_openapi.py
 ## Aviso
 
 A API usa client IDs de apps oficiais da Epic (Switch e iOS) de forma não oficial. A Epic pode bloquear esse uso a qualquer momento, e ele não é permitido pelos termos de serviço da Epic. Use por sua conta e risco.
-
-Baseado no [Discord-Fortnite-Skin-Checker](https://github.com/Lyxtem/Discord-Fortnite-Skin-Checker).
