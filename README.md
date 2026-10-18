@@ -49,7 +49,3 @@ Depois de mudar endpoints ou modelos, regenere o spec:
 ```bash
 python scripts/export_openapi.py
 ```
-
-## Aviso
-
-A API usa client IDs de apps oficiais da Epic (Switch e iOS) de forma não oficial. A Epic pode bloquear esse uso a qualquer momento, e ele não é permitido pelos termos de serviço da Epic. Use por sua conta e risco.
