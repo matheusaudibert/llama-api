@@ -1,11 +1,11 @@
-# Llama API
+z# Llama API
 
-> Llama API logs in to Epic Games accounts with the device code flow (the player approves on an official Epic page, the API never sees the password) and reads the Fortnite data: account info, V-Bucks, stats, the full locker with rarities and styles, and ready-made PNG images of the locker. It is a REST + JSON API built for Discord skin checker bots and account marketplaces. It is made to be self-hosted (Docker); a hosted instance runs at `https://llama-api.audibert.dev`, with API keys given on request through a GitHub issue at https://github.com/matheusaudibert/llama-api/issues/new.
+> Llama API logs in to Epic Games accounts with the device code flow (the player approves on an official Epic page, the API never sees the password) and reads the Fortnite data: account info, V-Bucks, stats, the full locker with rarities and styles, and ready-made PNG images of the locker. It is a REST + JSON API built for Discord skin checker bots and account marketplaces. It is made to be self-hosted (Docker); a hosted instance runs at `https://llamaapi.audibert.dev`, with API keys given on request through a GitHub issue at https://github.com/matheusaudibert/llama-api/issues/new.
 
 Important notes:
 
 - Authentication: every endpoint except `GET /health` needs the header `X-API-Key: <key>`, the `API_KEY` environment variable of the instance. Missing or wrong key returns `401`.
-- Base URL: the domain where the instance runs, e.g. `https://api.yourdomain.com`, or `https://llama-api.audibert.dev` for the hosted one.
+- Base URL: the domain where the instance runs, e.g. `https://api.yourdomain.com`, or `https://llamaapi.audibert.dev` for the hosted one.
 - Typical flow: `POST /auth/device` returns `session_id` and `verification_url`; show the URL to the player; poll `GET /auth/{session_id}` every ~3 s until `status` leaves `pending`; on `completed`, call `GET /accounts/{session_id}/summary` and `GET /accounts/{session_id}/locker`; then `DELETE /auth/{session_id}` to revoke the Epic token.
 - Login states: `pending`, `completed`, `expired` (link not approved within ~10 min, `expires_in` seconds), `error` (see the `error` field).
 - Session lifetime: valid while it was used in the last 30 minutes and the Epic token (~2 h) has not expired. After that, calls return `404` (session removed) or `410` (token expired) and the player must log in again.

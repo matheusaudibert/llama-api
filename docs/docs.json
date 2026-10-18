@@ -12,6 +12,9 @@
     "dark": "/logo/dark.png"
   },
   "favicon": "/llama-api.png",
+  "contextual": {
+    "options": ["copy", "claude", "chatgpt"]
+  },
   "navigation": {
     "languages": [
       {

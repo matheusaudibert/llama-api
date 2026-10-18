@@ -20,7 +20,7 @@ Todos os endpoints, menos `/health`, exigem o header `X-API-Key`.
 
 ## Self-hosted ou hospedada
 
-A API foi feita para ser self-hosted: rode a sua própria instância com a sua própria `API_KEY`. Para usar a instância hospedada em `https://llama-api.audibert.dev`, peça uma API key [abrindo uma issue](https://github.com/matheusaudibert/llama-api/issues/new).
+A API foi feita para ser self-hosted: rode a sua própria instância com a sua própria `API_KEY`. Para usar a instância hospedada em `https://llamaapi.audibert.dev`, peça uma API key [abrindo uma issue](https://github.com/matheusaudibert/llama-api/issues/new).
 
 ## Rodando
 
