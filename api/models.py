@@ -71,6 +71,7 @@ class CosmeticImages(BaseModel):
 class Cosmetic(BaseModel):
     id: str = Field(description="Lowercase cosmetic ID, e.g. cid_028_athena_commando_f.")
     name: str = Field(description="Item name. Same as `id` when the item is not in the catalog.")
+    name_pt: str = Field(description="Item name in Brazilian Portuguese. Same as `name` when there is no translation yet.")
     rarity: str = Field(description="Common, Uncommon, Rare, Epic, Legendary, Mythic or a series, such as Icon Series.")
     series: str | None = Field(None, description="Item series, if any.")
     type: str | None = Field(None, description="Type on fortnite-api, e.g. outfit, backpack, pickaxe, emote, glider.")
@@ -84,6 +85,7 @@ class Cosmetic(BaseModel):
 class EquippedCosmetic(BaseModel):
     id: str = Field(description="Lowercase cosmetic ID, e.g. cid_028_athena_commando_f.")
     name: str = Field(description="Item name. Same as `id` when the item is not in the catalog.")
+    name_pt: str = Field(description="Item name in Brazilian Portuguese. Same as `name` when there is no translation yet.")
     rarity: str = Field(description="Common, Uncommon, Rare, Epic, Legendary, Mythic or a series, such as Icon Series.")
     series: str | None = Field(None, description="Item series, if any.")
     type: str | None = Field(None, description="Type on fortnite-api, e.g. outfit, backpack, pickaxe, emote, glider.")
@@ -149,6 +151,7 @@ class RenderItem(BaseModel):
 
 class RenderRequest(BaseModel):
     display_name: str = Field(min_length=1, max_length=64, description="Account nickname, shown in the header.")
+    language: Literal["en", "pt-BR"] = Field("en", description="Language of the item names on the cards.")
     items: list[RenderItem] = Field(
         max_length=5000,
         description="Account items. You can send the `/locker` items as they are: extra fields are ignored and only the requested category is drawn.",

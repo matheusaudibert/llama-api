@@ -230,13 +230,13 @@ def _compose(category: str, items: list, icons: list, display_name: str) -> byte
 
 
 async def render_category(
-    session: aiohttp.ClientSession, catalog: Catalog, category: str, owned: dict, display_name: str
+    session: aiohttp.ClientSession, catalog: Catalog, category: str, owned: dict, display_name: str, language: str = "en"
 ) -> bytes | None:
     """owned is {cosmetic_id: owned_styles}. Returns PNG bytes, or None when nothing is in the category."""
     wanted = MYTHIC_CATEGORIES if category == "mythics" else [category]
     ids = [cid for cid in owned if category_of(cid) in wanted]
     infos = await asyncio.gather(*[catalog.get(session, cid) for cid in ids])
-    items = [cosmetic_entry(cid, owned[cid], info) for cid, info in zip(ids, infos)]
+    items = [cosmetic_entry(cid, owned[cid], info, catalog.names_pt.get(cid)) for cid, info in zip(ids, infos)]
     if category == "mythics":
         items = [i for i in items if i["is_mythic"]]
     if not items:
@@ -245,6 +245,10 @@ async def render_category(
     sort_items(items)
     # mythics: skins first, then backpacks, pickaxes, gliders and emotes
     items.sort(key=lambda i: wanted.index(category_of(i["id"])))
+    if language == "pt-BR":
+        # after sorting, so the order is the same in both languages
+        for item in items:
+            item["name"] = item["name_pt"]
 
     sem = asyncio.Semaphore(DOWNLOAD_CONCURRENCY)
     icons = await asyncio.gather(*[_fetch_icon(session, sem, item) for item in items])

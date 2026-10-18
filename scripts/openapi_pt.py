@@ -87,4 +87,6 @@ PT = {
     'Tags of the styles selected on the equipped item.': 'Tags dos estilos escolhidos no item equipado.',
     'Emotes in the emote wheel, in slot order. Empty slots are skipped.': 'Emotes da roda de emotes, na ordem dos espaços. Espaços vazios ficam de fora.',
     'Wraps, in slot order. Empty slots are skipped.': 'Envelopamentos, na ordem dos espaços. Espaços vazios ficam de fora.',
+    'Item name in Brazilian Portuguese. Same as `name` when there is no translation yet.': 'Nome do item em português do Brasil. Igual ao `name` quando ainda não há tradução.',
+    'Language of the item names on the cards.': 'Idioma dos nomes dos itens nos cards.',
 }

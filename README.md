@@ -14,9 +14,9 @@ HTTP API to log in to Epic Games accounts (device code flow) and read the Fortni
 | `GET` | `/auth/{session_id}` | Login status (`pending`, `completed`, `expired`, `error`) |
 | `DELETE` | `/auth/{session_id}` | Ends the session and revokes the Epic token |
 | `GET` | `/accounts/{session_id}/summary` | Account data, V-Bucks, platforms and stats |
-| `GET` | `/accounts/{session_id}/locker` | Every cosmetic, by category and sorted by rarity |
+| `GET` | `/accounts/{session_id}/locker` | Every cosmetic, by category and sorted by rarity, with names in English and Portuguese |
 | `GET` | `/accounts/{session_id}/equipped` | Items equipped in the active loadout (skin, pickaxe, emotes…) |
-| `POST` | `/render/{category}` | Locker PNG per category (`skins`, `backpacks`, `pickaxes`, `gliders`, `emotes`, `mythics`) |
+| `POST` | `/render/{category}` | Locker PNG per category (`skins`, `backpacks`, `pickaxes`, `gliders`, `emotes`, `mythics`), names in English or Portuguese |
 | `GET` | `/health` | Healthcheck (no API key) |
 
 Every endpoint except `/health` requires the `X-API-Key` header.

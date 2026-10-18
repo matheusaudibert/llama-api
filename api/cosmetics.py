@@ -21,6 +21,7 @@ COSMETICS_URL = "https://fortnite-api.com/v2/cosmetics/br"
 BANNERS_URL = "https://fortnite-api.com/v1/banners"
 # include shopHistory, used to tell whether a "mythic" item came back to the shop
 CATALOG_PARAMS = {"responseFlags": 4}
+PT_LANGUAGE = "pt-BR"
 
 TYPE_KEYS = {
     "Skins": "skins",
@@ -42,19 +43,21 @@ MYTHIC_RERELEASE_WINDOW = timedelta(days=730)
 
 # Items re-released to everyone, where only the original owners have this style.
 # Without the style they are a normal copy of the item.
+# (style tag, OG name, Portuguese name template filled with the item's Portuguese name)
 OG_STYLES = {
-    "cid_028_athena_commando_f": ("mat3", "OG Renegade Raider"),          # Black & Gold
-    "cid_017_athena_commando_m": ("stage2", "OG Aerial Assault Trooper"),  # Black & Gold
-    "cid_547_athena_commando_f_meteorwoman": ("mat3", "OG Paradigm"),      # Reality Warrior
-    "cid_029_athena_commando_f_halloween": ("mat3", "OG Ghoul Trooper"),   # Pink
-    "cid_030_athena_commando_m_halloween": ("mat1", "OG Skull Trooper"),   # Purple Glow
-    "cid_315_athena_commando_m_teriyakifish": ("stage3", "World Cup Fishstick"),
+    "cid_028_athena_commando_f": ("mat3", "OG Renegade Raider", "OG {}"),          # Black & Gold
+    "cid_017_athena_commando_m": ("stage2", "OG Aerial Assault Trooper", "OG {}"),  # Black & Gold
+    "cid_547_athena_commando_f_meteorwoman": ("mat3", "OG Paradigm", "OG {}"),      # Reality Warrior
+    "cid_029_athena_commando_f_halloween": ("mat3", "OG Ghoul Trooper", "OG {}"),   # Pink
+    "cid_030_athena_commando_m_halloween": ("mat1", "OG Skull Trooper", "OG {}"),   # Purple Glow
+    "cid_315_athena_commando_m_teriyakifish": ("stage3", "World Cup Fishstick", "{} da Copa do Mundo"),
 }
 
 
 class Catalog:
     def __init__(self) -> None:
         self.cosmetics: dict = {}
+        self.names_pt: dict[str, str] = {}
         self.banners: dict = {}
 
     async def refresh(self, session: aiohttp.ClientSession) -> None:
@@ -65,6 +68,14 @@ class Catalog:
             else:
                 logger.warning(f"Could not load cosmetics catalog ({resp.status})")
 
+        # only the names are kept, so the second catalog costs little memory
+        async with session.get(COSMETICS_URL, params={"language": PT_LANGUAGE}) as resp:
+            if resp.status == 200:
+                data = await resp.json()
+                self.names_pt = {c["id"].lower(): c["name"].strip() for c in data.get("data", []) if c.get("name")}
+            else:
+                logger.warning(f"Could not load Portuguese cosmetic names ({resp.status})")
+
         async with session.get(BANNERS_URL) as resp:
             if resp.status == 200:
                 data = await resp.json()
@@ -72,7 +83,7 @@ class Catalog:
             else:
                 logger.warning(f"Could not load banners catalog ({resp.status})")
 
-        logger.info(f"Catalog loaded: {len(self.cosmetics)} cosmetics, {len(self.banners)} banners")
+        logger.info(f"Catalog loaded: {len(self.cosmetics)} cosmetics ({len(self.names_pt)} Portuguese names), {len(self.banners)} banners")
 
     async def refresh_forever(self, session: aiohttp.ClientSession, every_seconds: int) -> None:
         while True:
@@ -92,9 +103,14 @@ class Catalog:
             if resp.status != 200:
                 return None
             data = (await resp.json()).get("data")
-            if data:
-                self.cosmetics[cid_lower] = data
-            return data
+        if data:
+            self.cosmetics[cid_lower] = data
+            async with session.get(f"{COSMETICS_URL}/{cosmetic_id}", params={"language": PT_LANGUAGE}) as resp:
+                if resp.status == 200:
+                    name = ((await resp.json()).get("data") or {}).get("name")
+                    if name:
+                        self.names_pt[cid_lower] = name.strip()
+        return data
 
 
 def parse_athena_items(athena: dict) -> dict:
@@ -131,8 +147,8 @@ def _recently_in_shop(info: dict) -> bool:
     return datetime.now(timezone.utc) - last < MYTHIC_RERELEASE_WINDOW
 
 
-def _og_style(cid: str, styles: list) -> tuple[str, str] | None:
-    """(style tag, OG name) when the player owns the original owners' style."""
+def _og_style(cid: str, styles: list) -> tuple[str, str, str] | None:
+    """(style tag, OG name, Portuguese template) when the player owns the original owners' style."""
     og = OG_STYLES.get(cid)
     if og and og[0] in {s.lower() for s in styles}:
         return og
@@ -147,8 +163,10 @@ def _style_image(info: dict, tag: str) -> str | None:
     return None
 
 
-def cosmetic_entry(cid: str, styles: list, info: dict | None) -> dict:
+def cosmetic_entry(cid: str, styles: list, info: dict | None, name_pt: str | None = None) -> dict:
     info = info or {}
+    name = info.get("name") or cid
+    name_pt = name_pt or name
     rarity = info.get("rarity", {}).get("displayValue", "Common")
     og = _og_style(cid, styles)
     if cid in OG_STYLES:
@@ -160,7 +178,8 @@ def cosmetic_entry(cid: str, styles: list, info: dict | None) -> dict:
     images = info.get("images", {})
     return {
         "id": cid,
-        "name": og[1] if og else info.get("name") or cid,
+        "name": og[1] if og else name,
+        "name_pt": og[2].format(name_pt) if og else name_pt,
         "rarity": rarity,
         "series": (info.get("series") or {}).get("value"),
         "type": info.get("type", {}).get("value"),
@@ -186,7 +205,7 @@ async def build_locker(session: aiohttp.ClientSession, catalog: Catalog, athena:
 
     locker = {key: [] for key in TYPE_KEYS.values()}
     for (cid, styles), info in zip(owned.items(), infos):
-        locker[category_of(cid)].append(cosmetic_entry(cid, styles, info))
+        locker[category_of(cid)].append(cosmetic_entry(cid, styles, info, catalog.names_pt.get(cid)))
 
     for bn in banner_ids:
         entry = banner_entry(catalog, bn)
@@ -206,6 +225,7 @@ def banner_entry(catalog: Catalog, banner_id: str) -> dict | None:
     return {
         "id": cid,
         "name": info.get("devName") or cid,
+        "name_pt": info.get("devName") or cid,
         "rarity": "Mythic" if cid in MYTHIC_SET else "Uncommon",
         "series": None,
         "type": "banner",
@@ -266,7 +286,7 @@ async def build_equipped(session: aiohttp.ClientSession, catalog: Catalog, loado
     equipped: dict = {key: None for key in EQUIPPED_SLOTS.values()}
     equipped.update({key: [] for key in EQUIPPED_LISTS.values()})
     for (field, cid, styles), info in zip(cosmetic_slots, infos):
-        entry = {**cosmetic_entry(cid, styles, info), "styles": styles}
+        entry = {**cosmetic_entry(cid, styles, info, catalog.names_pt.get(cid)), "styles": styles}
         if field in EQUIPPED_LISTS.values():
             equipped[field].append(entry)
         else:

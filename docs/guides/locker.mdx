@@ -28,6 +28,7 @@ icon: "shirt"
 {
   "id": "cid_028_athena_commando_f",
   "name": "Renegade Raider",
+  "name_pt": "Saqueadora Renegada",
   "rarity": "Mythic",
   "series": null,
   "type": "outfit",
@@ -42,6 +43,8 @@ icon: "shirt"
   "in_catalog": true
 }
 ```
+
+`name_pt` is the name in Brazilian Portuguese, from the fortnite-api.com Portuguese catalog. It is the same as `name` when the item has no translation yet. OG names are translated too (`OG Saqueadora Renegada`).
 
 ## Rarity and sorting
 
@@ -80,7 +83,7 @@ Every list is already sorted:
 
 ```json
 {
-  "skin": { "id": "character_fastrabbit", "name": "Dueling Dragons Jackie", "rarity": "Epic", "styles": [], "...": "..." },
+  "skin": { "id": "character_fastrabbit", "name": "Dueling Dragons Jackie", "name_pt": "Jaqueline do Duelo de Dragões", "rarity": "Epic", "styles": [], "...": "..." },
   "backpack": null,
   "pickaxe": { "id": "pickaxe_saltybrim_pin", "name": "Sonic Ring", "...": "..." },
   "glider": { "...": "..." },
@@ -117,6 +120,7 @@ curl -X POST https://api.yourdomain.com/render/skins \
 
 - You can send the items of every category together: only the requested category goes into the image.
 - Send `owned_styles`: without it, OGs (Renegade Raider, Ghoul Trooper, Skull Trooper…) are not recognized.
+- Send `"language": "pt-BR"` for the item names in Portuguese on the cards. The default is `en`.
 - Without any item of the category, the response is `422`.
 - Large accounts are scaled down to fit 2048 px of width. The first image of a large account can take a few seconds, because the icons are downloaded and then cached.
 

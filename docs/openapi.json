@@ -821,6 +821,11 @@
             "title": "Name",
             "description": "Item name. Same as `id` when the item is not in the catalog."
           },
+          "name_pt": {
+            "type": "string",
+            "title": "Name Pt",
+            "description": "Item name in Brazilian Portuguese. Same as `name` when there is no translation yet."
+          },
           "rarity": {
             "type": "string",
             "title": "Rarity",
@@ -881,6 +886,7 @@
         "required": [
           "id",
           "name",
+          "name_pt",
           "rarity",
           "images",
           "owned_styles",
@@ -1093,6 +1099,11 @@
             "title": "Name",
             "description": "Item name. Same as `id` when the item is not in the catalog."
           },
+          "name_pt": {
+            "type": "string",
+            "title": "Name Pt",
+            "description": "Item name in Brazilian Portuguese. Same as `name` when there is no translation yet."
+          },
           "rarity": {
             "type": "string",
             "title": "Rarity",
@@ -1148,6 +1159,7 @@
         "required": [
           "id",
           "name",
+          "name_pt",
           "rarity",
           "images",
           "styles",
@@ -1529,6 +1541,16 @@
             "minLength": 1,
             "title": "Display Name",
             "description": "Account nickname, shown in the header."
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "pt-BR"
+            ],
+            "title": "Language",
+            "description": "Language of the item names on the cards.",
+            "default": "en"
           },
           "items": {
             "items": {

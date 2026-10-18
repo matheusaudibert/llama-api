@@ -265,7 +265,7 @@ async def render_locker(category: RenderCategory, body: RenderRequest):
     owned = {}
     for item in body.items:
         owned.setdefault(item.id.lower(), []).extend(item.owned_styles)
-    png = await render_category(http, catalog, category.value, owned, body.display_name)
+    png = await render_category(http, catalog, category.value, owned, body.display_name, body.language)
     if png is None:
         raise HTTPException(status_code=422, detail=f"No {category.value} in the item list")
     return Response(content=png, media_type="image/png")

@@ -821,6 +821,11 @@
             "title": "Name",
             "description": "Nome do item. Igual ao `id` quando o item não está no catálogo."
           },
+          "name_pt": {
+            "type": "string",
+            "title": "Name Pt",
+            "description": "Nome do item em português do Brasil. Igual ao `name` quando ainda não há tradução."
+          },
           "rarity": {
             "type": "string",
             "title": "Rarity",
@@ -881,6 +886,7 @@
         "required": [
           "id",
           "name",
+          "name_pt",
           "rarity",
           "images",
           "owned_styles",
@@ -1093,6 +1099,11 @@
             "title": "Name",
             "description": "Nome do item. Igual ao `id` quando o item não está no catálogo."
           },
+          "name_pt": {
+            "type": "string",
+            "title": "Name Pt",
+            "description": "Nome do item em português do Brasil. Igual ao `name` quando ainda não há tradução."
+          },
           "rarity": {
             "type": "string",
             "title": "Rarity",
@@ -1148,6 +1159,7 @@
         "required": [
           "id",
           "name",
+          "name_pt",
           "rarity",
           "images",
           "styles",
@@ -1529,6 +1541,16 @@
             "minLength": 1,
             "title": "Display Name",
             "description": "Nick da conta, exibido no cabeçalho."
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "pt-BR"
+            ],
+            "title": "Language",
+            "description": "Idioma dos nomes dos itens nos cards.",
+            "default": "en"
           },
           "items": {
             "items": {
