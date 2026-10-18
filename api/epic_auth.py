@@ -1,11 +1,13 @@
 import asyncio
+import os
 import platform
 import time
 
 import aiohttp
 
-SWITCH_TOKEN = "OThmN2U0MmMyZTNhNGY4NmE3NGViNDNmYmI0MWVkMzk6MGEyNDQ5YTItMDAxYS00NTFlLWFmZWMtM2U4MTI5MDFjNGQ3"
-IOS_TOKEN    = "M2Y2OWU1NmM3NjQ5NDkyYzhjYzI5ZjFhZjA4YThhMTI6YjUxZWU5Y2IxMjIzNGY1MGE2OWVmYTY3ZWY1MzgxMmU="
+# Epic OAuth clients, as base64 "client_id:client_secret". Never hardcode them: they come from the environment
+SWITCH_TOKEN = os.environ.get("EPIC_SWITCH_CLIENT", "")
+IOS_TOKEN    = os.environ.get("EPIC_IOS_CLIENT", "")
 
 OAUTH_URL = "https://account-public-service-prod.ol.epicgames.com/account/api/oauth"
 OAUTH_URL_03 = "https://account-public-service-prod03.ol.epicgames.com/account/api/oauth"

@@ -32,10 +32,11 @@ The repository already has a ready-to-use `Dockerfile`. Anything that builds or 
     ```bash
     git clone https://github.com/your-user/llama-api.git
     cd llama-api
+    cp .env.example .env   # fill in API_KEY and the EPIC_* clients
     docker build -t llama-api .
     docker run -d --name llama-api \
       -p 127.0.0.1:8000:8000 \
-      -e API_KEY="paste-the-key-here" \
+      --env-file .env \
       --restart unless-stopped \
       llama-api
     ```
@@ -46,13 +47,16 @@ The repository already has a ready-to-use `Dockerfile`. Anything that builds or 
     | Variable | Required | Default | Description |
     |---|---|---|---|
     | `API_KEY` | Yes | | Key the bot sends in the `X-API-Key` header |
+    | `EPIC_SWITCH_CLIENT` | Yes | | Epic Nintendo Switch client (base64 `client_id:client_secret`), creates the device code. [Values](https://github.com/MixV2/EpicResearch/blob/main/docs/auth/auth_clients.md) |
+    | `EPIC_IOS_CLIENT` | Yes | | `fortniteIOSGameClient` (base64), the token that reads the account |
+    | `EPIC_EOS_CLIENT` | Yes | | `fortnitePCGameClient` (base64), the EOS token for `/equipped` |
     | `CATALOG_REFRESH_SECONDS` | No | `21600` | How often the fortnite-api.com catalog is reloaded |
     | `LOG_LEVEL` | No | `INFO` | `DEBUG`, `INFO`, `WARNING` or `ERROR`. `DEBUG` also logs the `/health` calls |
     | `LOG_FORMAT` | No | `text` | `text` for `key=value` lines, `json` for one JSON object per line |
     | `PUBLIC_URL` | No | request host | Base URL used in `images.background`, e.g. `https://api.yourdomain.com`. Set it when a proxy changes the host |
 
     <Warning>
-      The API does not start without `API_KEY`.
+      The API does not start without `API_KEY` and the three `EPIC_*` clients.
     </Warning>
   </Step>
   <Step title="Set up HTTPS">

@@ -5,10 +5,11 @@ icon: "docker"
 ---
 
 ```bash
+cp .env.example .env   # preencha API_KEY e os clientes EPIC_*
 docker build -t llama-api .
 docker run -d --name llama-api \
   -p 8000:8000 \
-  -e API_KEY="cole-a-chave-aqui" \
+  --env-file .env \
   --restart unless-stopped \
   llama-api
 ```
@@ -24,6 +25,9 @@ curl http://localhost:8000/health
 | Variável | Obrigatória | Padrão | Descrição |
 |---|---|---|---|
 | `API_KEY` | Sim | | Chave que o bot envia no header `X-API-Key` |
+| `EPIC_SWITCH_CLIENT` | Sim | | Cliente do Nintendo Switch da Epic (base64 `client_id:client_secret`), cria o device code. [Valores](https://github.com/MixV2/EpicResearch/blob/main/docs/auth/auth_clients.md) |
+| `EPIC_IOS_CLIENT` | Sim | | `fortniteIOSGameClient` (base64), o token que lê a conta |
+| `EPIC_EOS_CLIENT` | Sim | | `fortnitePCGameClient` (base64), o token EOS do `/equipped` |
 | `CATALOG_REFRESH_SECONDS` | Não | `21600` | Intervalo de recarga do catálogo do fortnite-api.com |
 | `LOG_LEVEL` | Não | `INFO` | `DEBUG`, `INFO`, `WARNING` ou `ERROR`. `DEBUG` também registra as chamadas a `/health` |
 | `LOG_FORMAT` | Não | `text` | `text` para linhas `chave=valor`, `json` para um objeto JSON por linha |

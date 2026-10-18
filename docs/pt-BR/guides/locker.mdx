@@ -115,7 +115,7 @@ Cada lista já vem ordenada:
 </div>
 ```
 
-Os fundos são servidos pela própria API em `GET /backgrounds/{name}.png`, sem API key e com cache de uma semana. Os nomes são `common`, `uncommon`, `rare`, `epic`, `legendary`, `mythic`, `icon-series`, `dark-series`, `star-wars-series`, `marvel-series`, `dc-series`, `gaming-legends-series`, `shadow-series`, `slurp-series`, `lava-series`, `frozen-series` e `series` (para séries sem quadrado próprio). Itens míticos, OGs incluídos, usam `mythic`.
+Os fundos são servidos pela própria API em `GET /backgrounds/{name}.png`, sem API key e com cache de uma semana. Os nomes são `common`, `uncommon`, `rare`, `epic`, `legendary`, `mythic`, `icon-series`, `dark-series`, `star-wars-series`, `marvel-series`, `dc-series`, `gaming-legends-series`, `shadow-series`, `slurp-series`, `lava-series`, `frozen-series`, `crew-series` e `series` (para séries sem quadrado próprio). Itens míticos, OGs incluídos, usam `mythic`. Itens da Crew usam `crew-series`, mesmo com `rarity` comum, como `Epic`.
 
 <Note>
   A URL do `background` usa o host pelo qual a requisição chegou. Atrás de um proxy que muda o host, defina a variável de ambiente `PUBLIC_URL` (por exemplo `https://api.seudominio.com`).

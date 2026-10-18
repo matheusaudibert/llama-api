@@ -19,22 +19,21 @@ icon: "rocket"
     pip install -r requirements.txt
     ```
   </Step>
-  <Step title="Defina a API key">
-    A API não inicia sem `API_KEY`. Gere uma chave aleatória:
+  <Step title="Configure o ambiente">
+    Copie o arquivo de exemplo:
 
     ```bash
-    python -c "import secrets; print(secrets.token_urlsafe(32))"
+    cp .env.example .env
     ```
 
-    Exporte a chave gerada:
+    Preencha o `.env`. A API não inicia sem estas quatro variáveis:
 
-    ```bash
-    export API_KEY="cole-a-chave-aqui"  # Windows PowerShell: $env:API_KEY="cole-a-chave-aqui"
-    ```
+    - `API_KEY`: uma chave aleatória que o seu bot vai enviar. Gere com `python -c "import secrets; print(secrets.token_urlsafe(32))"`.
+    - `EPIC_SWITCH_CLIENT`, `EPIC_IOS_CLIENT` e `EPIC_EOS_CLIENT`: os clientes OAuth da Epic, em base64 `client_id:client_secret`, do cliente do Nintendo Switch, do `fortniteIOSGameClient` e do `fortnitePCGameClient`. Pegue na [lista de clientes da Epic](https://github.com/MixV2/EpicResearch/blob/main/docs/auth/auth_clients.md).
   </Step>
   <Step title="Inicie o servidor">
     ```bash
-    uvicorn api.main:app --port 8000
+    uvicorn api.main:app --port 8000 --env-file .env
     ```
 
     Espere a linha `Catalog loaded: ... cosmetics` no log. A documentação interativa do FastAPI fica em `http://localhost:8000/docs`.

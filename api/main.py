@@ -45,6 +45,8 @@ setup_logging()
 logger = logging.getLogger("api")
 
 API_KEY = os.environ.get("API_KEY")
+# the Epic client credentials are read in epic_auth and epic_data
+REQUIRED_ENV = ["API_KEY", "EPIC_SWITCH_CLIENT", "EPIC_IOS_CLIENT", "EPIC_EOS_CLIENT"]
 CATALOG_REFRESH_SECONDS = int(os.environ.get("CATALOG_REFRESH_SECONDS", 6 * 60 * 60))
 # public base URL for the links this API serves (images.background); defaults to the request's host
 PUBLIC_URL = os.environ.get("PUBLIC_URL", "").rstrip("/")
@@ -57,8 +59,9 @@ http: aiohttp.ClientSession
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global http
-    if not API_KEY:
-        raise RuntimeError("Set the API_KEY environment variable before starting the API")
+    missing = [name for name in REQUIRED_ENV if not os.environ.get(name)]
+    if missing:
+        raise RuntimeError(f"Set these environment variables before starting the API: {', '.join(missing)}")
 
     logger.info("Starting", extra=fields(version=app.version, catalog_refresh_s=CATALOG_REFRESH_SECONDS))
     http = aiohttp.ClientSession()

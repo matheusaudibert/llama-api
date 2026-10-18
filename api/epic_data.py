@@ -1,4 +1,5 @@
 import logging
+import os
 import secrets
 
 import aiohttp
@@ -13,8 +14,8 @@ PROFILE_URL = "https://fortnite-public-service-prod11.ol.epicgames.com/fortnite/
 EOS_TOKEN_URL = "https://api.epicgames.dev/auth/v1/oauth/token"
 LOCKER_URL = "https://fngw-svc-gc-livefn.ol.epicgames.com/api/locker/v4"
 FORTNITE_DEPLOYMENT = "62a9473a2dca46b29ccf17577fcf42d7"
-# fortnitePCGameClient: EOS Connect only gives Locker Service access to the game's client
-EOS_CLIENT = "ZWM2ODRiOGM2ODdmNDc5ZmFkZWEzY2IyYWQ4M2Y1YzY6ZTFmMzFjMjExZjI4NDEzMTg2MjYyZDM3YTEzZmM4NGQ="
+# fortnitePCGameClient, base64 "client_id:client_secret": EOS Connect only gives Locker Service access to the game's client
+EOS_CLIENT = os.environ.get("EPIC_EOS_CLIENT", "")
 
 VBUCKS_CATEGORIES = [
     "Currency:MtxPurchased",

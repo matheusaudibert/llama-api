@@ -115,7 +115,7 @@ Every list is already sorted:
 </div>
 ```
 
-The backgrounds are served by the API itself at `GET /backgrounds/{name}.png`, without an API key and with a one-week cache header. The names are `common`, `uncommon`, `rare`, `epic`, `legendary`, `mythic`, `icon-series`, `dark-series`, `star-wars-series`, `marvel-series`, `dc-series`, `gaming-legends-series`, `shadow-series`, `slurp-series`, `lava-series`, `frozen-series` and `series` (for series that have no square of their own). Mythic items, OGs included, get `mythic`.
+The backgrounds are served by the API itself at `GET /backgrounds/{name}.png`, without an API key and with a one-week cache header. The names are `common`, `uncommon`, `rare`, `epic`, `legendary`, `mythic`, `icon-series`, `dark-series`, `star-wars-series`, `marvel-series`, `dc-series`, `gaming-legends-series`, `shadow-series`, `slurp-series`, `lava-series`, `frozen-series`, `crew-series` and `series` (for series that have no square of their own). Mythic items, OGs included, get `mythic`. Crew items get `crew-series`, even though their `rarity` is a plain one like `Epic`.
 
 <Note>
   The `background` URL uses the host the request came in on. Behind a proxy that changes the host, set the `PUBLIC_URL` environment variable (for example `https://api.yourdomain.com`).

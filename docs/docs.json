@@ -13,7 +13,11 @@
   },
   "favicon": "/llama-api.png",
   "contextual": {
-    "options": ["copy", "claude", "chatgpt"]
+    "options": [
+      "copy",
+      "claude",
+      "chatgpt"
+    ]
   },
   "navigation": {
     "languages": [
@@ -22,11 +26,39 @@
         "default": true,
         "tabs": [
           {
+            "tab": "Guides",
+            "groups": [
+              {
+                "group": "Getting started",
+                "pages": [
+                  "guides/introduction",
+                  "quickstart"
+                ]
+              },
+              {
+                "group": "Concepts",
+                "pages": [
+                  "guides/login-flow",
+                  "guides/locker",
+                  "guides/errors"
+                ]
+              },
+              {
+                "group": "Integration",
+                "pages": [
+                  "guides/discord-bot"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "API Reference",
             "groups": [
               {
                 "group": "Overview",
-                "pages": ["api-reference/introduction"]
+                "pages": [
+                  "api-reference/introduction"
+                ]
               },
               {
                 "group": "Endpoints",
@@ -49,28 +81,14 @@
             ]
           },
           {
-            "tab": "Guides",
-            "groups": [
-              {
-                "group": "Getting started",
-                "pages": ["guides/introduction", "quickstart"]
-              },
-              {
-                "group": "Concepts",
-                "pages": ["guides/login-flow", "guides/locker", "guides/errors"]
-              },
-              {
-                "group": "Integration",
-                "pages": ["guides/discord-bot"]
-              }
-            ]
-          },
-          {
             "tab": "Self-hosting",
             "groups": [
               {
                 "group": "Deploy",
-                "pages": ["self-hosting/production", "self-hosting/local"]
+                "pages": [
+                  "self-hosting/production",
+                  "self-hosting/local"
+                ]
               }
             ]
           }
@@ -80,11 +98,39 @@
         "language": "pt-BR",
         "tabs": [
           {
+            "tab": "Guias",
+            "groups": [
+              {
+                "group": "Começando",
+                "pages": [
+                  "pt-BR/guides/introduction",
+                  "pt-BR/quickstart"
+                ]
+              },
+              {
+                "group": "Conceitos",
+                "pages": [
+                  "pt-BR/guides/login-flow",
+                  "pt-BR/guides/locker",
+                  "pt-BR/guides/errors"
+                ]
+              },
+              {
+                "group": "Integração",
+                "pages": [
+                  "pt-BR/guides/discord-bot"
+                ]
+              }
+            ]
+          },
+          {
             "tab": "Referência da API",
             "groups": [
               {
                 "group": "Visão geral",
-                "pages": ["pt-BR/api-reference/introduction"]
+                "pages": [
+                  "pt-BR/api-reference/introduction"
+                ]
               },
               {
                 "group": "Endpoints",
@@ -107,28 +153,14 @@
             ]
           },
           {
-            "tab": "Guias",
-            "groups": [
-              {
-                "group": "Começando",
-                "pages": ["pt-BR/guides/introduction", "pt-BR/quickstart"]
-              },
-              {
-                "group": "Conceitos",
-                "pages": ["pt-BR/guides/login-flow", "pt-BR/guides/locker", "pt-BR/guides/errors"]
-              },
-              {
-                "group": "Integração",
-                "pages": ["pt-BR/guides/discord-bot"]
-              }
-            ]
-          },
-          {
             "tab": "Self-hosting",
             "groups": [
               {
                 "group": "Deploy",
-                "pages": ["pt-BR/self-hosting/production", "pt-BR/self-hosting/local"]
+                "pages": [
+                  "pt-BR/self-hosting/production",
+                  "pt-BR/self-hosting/local"
+                ]
               }
             ]
           }
@@ -137,9 +169,18 @@
     ]
   },
   "redirects": [
-    { "source": "/deploy/producao", "destination": "/self-hosting/production" },
-    { "source": "/deploy/coolify", "destination": "/self-hosting/production" },
-    { "source": "/deploy/local", "destination": "/self-hosting/local" }
+    {
+      "source": "/deploy/producao",
+      "destination": "/self-hosting/production"
+    },
+    {
+      "source": "/deploy/coolify",
+      "destination": "/self-hosting/production"
+    },
+    {
+      "source": "/deploy/local",
+      "destination": "/self-hosting/local"
+    }
   ],
   "api": {
     "playground": {

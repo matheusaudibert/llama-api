@@ -28,16 +28,18 @@ The API is made to be self-hosted: run your own instance with your own `API_KEY`
 
 ## Running
 
+Copy `.env.example` to `.env` and fill in `API_KEY` and the three Epic OAuth clients (`EPIC_SWITCH_CLIENT`, `EPIC_IOS_CLIENT`, `EPIC_EOS_CLIENT`, as base64 `client_id:client_secret`, from the [Epic auth clients list](https://github.com/MixV2/EpicResearch/blob/main/docs/auth/auth_clients.md)). No credential is hardcoded.
+
 ```bash
 pip install -r requirements.txt
-API_KEY="your-key" uvicorn api.main:app --port 8000
+uvicorn api.main:app --port 8000 --env-file .env
 ```
 
 Or with Docker:
 
 ```bash
 docker build -t llama-api .
-docker run -p 8000:8000 -e API_KEY="your-key" llama-api
+docker run -p 8000:8000 --env-file .env llama-api
 ```
 
 Swagger UI at `http://localhost:8000/docs`.

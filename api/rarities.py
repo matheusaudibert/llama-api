@@ -21,6 +21,7 @@ SQUARES = {
     "slurp series": "slurp",
     "lava series": "lava",
     "frozen series": "hielo",
+    "crew series": "crew",
 }
 
 # public names, as in /backgrounds/icon-series.png; "series" covers series without their own square
@@ -28,9 +29,10 @@ BACKGROUNDS = {rarity.replace(" ", "-"): square for rarity, square in SQUARES.it
 
 
 def background_key(rarity: str, series: str | None) -> str:
-    key = rarity.lower()
-    if key in SQUARES:
-        return key.replace(" ", "-")
+    # mythic wins; then the series, since Crew items report a plain rarity (Epic, Rare…) with series "CREW SERIES"
+    for key in ("mythic" if rarity.lower() == "mythic" else None, (series or "").lower(), rarity.lower()):
+        if key in SQUARES:
+            return key.replace(" ", "-")
     return "series" if series else "common"
 
 
