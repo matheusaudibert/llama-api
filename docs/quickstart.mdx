@@ -1,50 +1,50 @@
 ---
-title: "Início rápido"
-description: "Rode a API localmente e faça o primeiro login numa conta Epic Games."
+title: "Quickstart"
+description: "Run the API locally and do your first login to an Epic Games account."
 icon: "rocket"
 ---
 
-## Pré-requisitos
+## Prerequisites
 
-- Python 3.12 ou mais novo, ou Docker
-- Uma conta Epic Games para testar
+- Python 3.12 or newer, or Docker
+- An Epic Games account to test with
 
 <Steps>
-  <Step title="Clone o repositório e instale as dependências">
+  <Step title="Clone the repository and install the dependencies">
     ```bash
-    git clone https://github.com/matheusaudibert/fortnite-account-api.git
-    cd fortnite-account-api
+    git clone https://github.com/matheusaudibert/llama-api.git
+    cd llama-api
     python -m venv .venv
     source .venv/bin/activate  # Windows: .venv\Scripts\activate
     pip install -r requirements.txt
     ```
   </Step>
-  <Step title="Defina a API key">
-    A API não inicia sem `API_KEY`. Gere uma chave aleatória:
+  <Step title="Set the API key">
+    The API does not start without `API_KEY`. Generate a random key:
 
     ```bash
     python -c "import secrets; print(secrets.token_urlsafe(32))"
     ```
 
-    Exporte a chave gerada:
+    Export the generated key:
 
     ```bash
-    export API_KEY="cole-a-chave-aqui"  # Windows PowerShell: $env:API_KEY="cole-a-chave-aqui"
+    export API_KEY="paste-the-key-here"  # Windows PowerShell: $env:API_KEY="paste-the-key-here"
     ```
   </Step>
-  <Step title="Inicie o servidor">
+  <Step title="Start the server">
     ```bash
     uvicorn api.main:app --port 8000
     ```
 
-    Espere a linha `Catalog loaded: ... cosmetics` no log. A documentação interativa do FastAPI fica em `http://localhost:8000/docs`.
+    Wait for the `Catalog loaded: ... cosmetics` line in the log. The interactive FastAPI docs are at `http://localhost:8000/docs`.
   </Step>
-  <Step title="Inicie um login">
+  <Step title="Start a login">
     ```bash
     curl -X POST http://localhost:8000/auth/device -H "X-API-Key: $API_KEY"
     ```
 
-    ```json Resposta
+    ```json Response
     {
       "session_id": "8M4-85Ra3sMk5gmMyvm__k_54_fGdHyo",
       "verification_url": "https://www.epicgames.com/activate?userCode=RSHBCWPX",
@@ -52,34 +52,34 @@ icon: "rocket"
     }
     ```
 
-    Abra `verification_url` no navegador e autorize com a conta Epic.
+    Open `verification_url` in the browser and authorize with the Epic account.
   </Step>
-  <Step title="Confira o status">
+  <Step title="Check the status">
     ```bash
-    curl http://localhost:8000/auth/SEU_SESSION_ID -H "X-API-Key: $API_KEY"
+    curl http://localhost:8000/auth/YOUR_SESSION_ID -H "X-API-Key: $API_KEY"
     ```
 
-    Quando `status` for `completed`, a conta está logada.
+    When `status` is `completed`, the account is logged in.
   </Step>
-  <Step title="Leia o locker">
+  <Step title="Read the locker">
     ```bash
-    curl http://localhost:8000/accounts/SEU_SESSION_ID/locker -H "X-API-Key: $API_KEY"
+    curl http://localhost:8000/accounts/YOUR_SESSION_ID/locker -H "X-API-Key: $API_KEY"
     ```
   </Step>
-  <Step title="Encerre a sessão">
+  <Step title="End the session">
     ```bash
-    curl -X DELETE http://localhost:8000/auth/SEU_SESSION_ID -H "X-API-Key: $API_KEY"
+    curl -X DELETE http://localhost:8000/auth/YOUR_SESSION_ID -H "X-API-Key: $API_KEY"
     ```
   </Step>
 </Steps>
 
-## Próximos passos
+## Next steps
 
 <Columns cols={2}>
-  <Card title="Fluxo de login" icon="key" href="/guides/login-flow">
-    Estados da sessão, tempos de expiração e boas práticas de polling.
+  <Card title="Login flow" icon="key" href="/guides/login-flow">
+    Session states, expiration times and polling best practices.
   </Card>
-  <Card title="Exemplo com discord.js" icon="discord" href="/guides/discord-bot">
-    Integre a API no seu bot.
+  <Card title="discord.js example" icon="discord" href="/guides/discord-bot">
+    Integrate the API into your bot.
   </Card>
 </Columns>

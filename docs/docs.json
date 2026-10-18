@@ -1,60 +1,139 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Fortnite Account API",
+  "name": "Llama API",
   "colors": {
     "primary": "#7C3AED",
     "light": "#A78BFA",
     "dark": "#6D28D9"
   },
-  "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo/light.png",
+    "dark": "/logo/dark.png"
+  },
+  "favicon": "/llama-api.png",
   "navigation": {
-    "tabs": [
+    "languages": [
       {
-        "tab": "Guias",
-        "groups": [
+        "language": "en",
+        "default": true,
+        "tabs": [
           {
-            "group": "Começando",
-            "pages": ["index", "quickstart"]
+            "tab": "API Reference",
+            "groups": [
+              {
+                "group": "Overview",
+                "pages": ["api-reference/introduction"]
+              },
+              {
+                "group": "Endpoints",
+                "openapi": {
+                  "source": "openapi.json",
+                  "directory": "api-reference/endpoints"
+                },
+                "pages": [
+                  "POST /auth/device",
+                  "GET /auth/{session_id}",
+                  "DELETE /auth/{session_id}",
+                  "GET /accounts/{session_id}/summary",
+                  "GET /accounts/{session_id}/locker",
+                  "POST /render/{category}",
+                  "GET /health"
+                ]
+              }
+            ]
           },
           {
-            "group": "Conceitos",
-            "pages": ["guides/login-flow", "guides/locker", "guides/errors"]
+            "tab": "Guides",
+            "groups": [
+              {
+                "group": "Getting started",
+                "pages": ["guides/introduction", "quickstart"]
+              },
+              {
+                "group": "Concepts",
+                "pages": ["guides/login-flow", "guides/locker", "guides/errors"]
+              },
+              {
+                "group": "Integration",
+                "pages": ["guides/discord-bot"]
+              }
+            ]
           },
           {
-            "group": "Integração",
-            "pages": ["guides/discord-bot"]
-          },
-          {
-            "group": "Deploy",
-            "pages": ["deploy/producao", "deploy/local"]
+            "tab": "Self-hosting",
+            "groups": [
+              {
+                "group": "Deploy",
+                "pages": ["self-hosting/production", "self-hosting/local"]
+              }
+            ]
           }
         ]
       },
       {
-        "tab": "Referência da API",
-        "groups": [
+        "language": "pt-BR",
+        "tabs": [
           {
-            "group": "Visão geral",
-            "pages": ["api-reference/introduction"]
+            "tab": "Referência da API",
+            "groups": [
+              {
+                "group": "Visão geral",
+                "pages": ["pt-BR/api-reference/introduction"]
+              },
+              {
+                "group": "Endpoints",
+                "openapi": {
+                  "source": "pt-BR/openapi.json",
+                  "directory": "pt-BR/api-reference/endpoints"
+                },
+                "pages": [
+                  "POST /auth/device",
+                  "GET /auth/{session_id}",
+                  "DELETE /auth/{session_id}",
+                  "GET /accounts/{session_id}/summary",
+                  "GET /accounts/{session_id}/locker",
+                  "POST /render/{category}",
+                  "GET /health"
+                ]
+              }
+            ]
           },
           {
-            "group": "Endpoints",
-            "openapi": "openapi.json",
-            "pages": [
-              "POST /auth/device",
-              "GET /auth/{session_id}",
-              "DELETE /auth/{session_id}",
-              "GET /accounts/{session_id}/summary",
-              "GET /accounts/{session_id}/locker",
-              "POST /render/{category}",
-              "GET /health"
+            "tab": "Guias",
+            "groups": [
+              {
+                "group": "Começando",
+                "pages": ["pt-BR/guides/introduction", "pt-BR/quickstart"]
+              },
+              {
+                "group": "Conceitos",
+                "pages": ["pt-BR/guides/login-flow", "pt-BR/guides/locker", "pt-BR/guides/errors"]
+              },
+              {
+                "group": "Integração",
+                "pages": ["pt-BR/guides/discord-bot"]
+              }
+            ]
+          },
+          {
+            "tab": "Self-hosting",
+            "groups": [
+              {
+                "group": "Deploy",
+                "pages": ["pt-BR/self-hosting/production", "pt-BR/self-hosting/local"]
+              }
             ]
           }
         ]
       }
     ]
   },
+  "redirects": [
+    { "source": "/deploy/producao", "destination": "/self-hosting/production" },
+    { "source": "/deploy/coolify", "destination": "/self-hosting/production" },
+    { "source": "/deploy/local", "destination": "/self-hosting/local" }
+  ],
   "api": {
     "playground": {
       "display": "interactive"

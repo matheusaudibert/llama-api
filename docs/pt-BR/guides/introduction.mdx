@@ -4,13 +4,14 @@ description: "API para logar em contas Epic Games e ler os dados do Fortnite: co
 icon: "house"
 ---
 
-A Fortnite Account API cuida da parte difícil de um skin checker: o login na conta Epic Games e a coleta dos dados. O seu bot só chama endpoints HTTP e decide como mostrar o resultado (embeds, imagem do locker, etc.).
+A Llama API cuida da parte difícil de um skin checker: o login na conta Epic Games e a coleta dos dados. O seu bot só chama endpoints HTTP e decide como mostrar o resultado (embeds, imagem do locker, etc.).
 
 ## O que ela faz
 
 - **Login sem senha**: usa o device code flow da Epic. O jogador abre um link oficial da Epic e autoriza; a API nunca vê a senha.
 - **Resumo da conta**: email, país, 2FA, V-Bucks, plataformas conectadas, nível, vitórias e temporadas passadas.
 - **Locker completo**: skins, mochilas, picaretas, emotes, asas, envelopamentos, sprays e banners, com nome, raridade, imagens e estilos desbloqueados.
+- **Imagens do locker**: um PNG pronto por categoria, mais um só com os itens míticos.
 - **Catálogo sempre atualizado**: carrega o catálogo do [fortnite-api.com](https://fortnite-api.com) ao iniciar, recarrega a cada 6 h e busca na hora itens lançados depois disso.
 
 ## Como funciona
@@ -18,7 +19,7 @@ A Fortnite Account API cuida da parte difícil de um skin checker: o login na co
 ```mermaid
 sequenceDiagram
     participant Bot as Seu bot
-    participant API as Fortnite Account API
+    participant API as Llama API
     participant Epic as Epic Games
     participant Player as Jogador
 
@@ -39,17 +40,23 @@ sequenceDiagram
 
 Os tokens da Epic ficam só na API. O seu bot conhece apenas o `session_id`.
 
+## Self-hosted ou hospedada
+
+A Llama API foi feita para ser **self-hosted**: você roda a sua própria instância e define a sua própria API key. Veja [Deploy em produção](/pt-BR/self-hosting/production).
+
+Também existe uma instância hospedada em `https://llama-api.audibert.dev`. Para usá-la, peça uma API key [abrindo uma issue no GitHub](https://github.com/matheusaudibert/llama-api/issues/new).
+
 <Columns cols={2}>
-  <Card title="Início rápido" icon="rocket" href="/quickstart">
+  <Card title="Início rápido" icon="rocket" href="/pt-BR/quickstart">
     Rode a API e faça o primeiro login em poucos minutos.
   </Card>
-  <Card title="Deploy em produção" icon="server" href="/deploy/producao">
+  <Card title="Deploy em produção" icon="server" href="/pt-BR/self-hosting/production">
     Coloque a API no ar em qualquer servidor ou plataforma com Docker.
   </Card>
-  <Card title="Exemplo com discord.js" icon="discord" href="/guides/discord-bot">
+  <Card title="Exemplo com discord.js" icon="discord" href="/pt-BR/guides/discord-bot">
     Comando `/checker` completo em TypeScript.
   </Card>
-  <Card title="Referência da API" icon="code" href="/api-reference/introduction">
+  <Card title="Referência da API" icon="code" href="/pt-BR/api-reference/introduction">
     Todos os endpoints, parâmetros e respostas.
   </Card>
 </Columns>

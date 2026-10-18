@@ -1,0 +1,55 @@
+---
+title: "Fluxo de login"
+description: "Como funciona o login por device code, os estados da sessão e quando cada uma expira."
+icon: "key"
+---
+
+A API usa o **device code flow** da Epic Games. O jogador nunca digita senha no seu bot: ele abre uma página oficial da Epic e aprova o acesso.
+
+## Estados da sessão
+
+`POST /auth/device` cria uma sessão e devolve o `session_id`. A partir daí, a API espera a aprovação em background e a sessão passa por estes estados:
+
+| Status | Significado | O que o bot deve fazer |
+|---|---|---|
+| `pending` | Esperando o jogador autorizar | Continuar consultando `GET /auth/{session_id}` |
+| `completed` | Login feito | Chamar `/summary` e `/locker` |
+| `expired` | O link expirou sem autorização (~10 min) | Pedir para o jogador tentar de novo |
+| `error` | Falha inesperada na Epic | Mostrar o campo `error` e pedir nova tentativa |
+
+## Polling
+
+Consulte `GET /auth/{session_id}` a cada 3 segundos. A API já consulta a Epic a cada 5 segundos, então um intervalo menor não acelera nada.
+
+Pare de consultar quando o status sair de `pending` ou quando passar o tempo de `expires_in` retornado no início.
+
+```ts
+async function waitForLogin(sessionId: string, expiresIn: number) {
+  const deadline = Date.now() + expiresIn * 1000;
+  while (Date.now() < deadline) {
+    const { status, display_name } = await api<LoginStatus>(`/auth/${sessionId}`);
+    if (status !== "pending") return { status, display_name };
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+  return { status: "expired" as const };
+}
+```
+
+## Duração da sessão
+
+Depois do login, a sessão fica válida enquanto as duas condições valerem:
+
+- Houve alguma chamada com o `session_id` nos últimos **30 minutos**.
+- O token da Epic não expirou. Ele dura cerca de **2 horas**.
+
+Durante esse tempo, você pode chamar `/summary` e `/locker` quantas vezes quiser sem pedir login de novo. Depois disso, as chamadas retornam `404` (sessão removida) ou `410` (token expirado).
+
+<Tip>
+  Chame `DELETE /auth/{session_id}` assim que terminar de usar os dados. Isso invalida o token na Epic na hora, em vez de esperar a expiração.
+</Tip>
+
+## Segurança
+
+- Os tokens da Epic dão acesso total à conta. Eles **nunca saem da API**: as respostas trazem só o `session_id` e os dados lidos.
+- O `session_id` é aleatório (192 bits). Trate-o como segredo: não mostre em canais públicos.
+- As sessões ficam **em memória**. Se a API reiniciar, todas as sessões somem e os jogadores precisam logar de novo. Por isso, rode só **uma instância e um worker**.

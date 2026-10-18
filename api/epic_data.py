@@ -12,6 +12,9 @@ VBUCKS_CATEGORIES = [
     "Currency:MtxPurchaseBonus",
 ]
 
+# console accounts a buyer can link, as named in externalAuths
+LINKABLE_PLATFORMS = ["psn", "xbl", "nintendo"]
+
 
 class EpicError(Exception):
     def __init__(self, what: str, status: int):
@@ -57,6 +60,31 @@ def get_vbucks(common_core: dict) -> int:
     )
 
 
+def get_vbucks_by_platform(common_core: dict) -> dict:
+    """{platform: quantity}. V-Bucks bought on one platform can only be spent there; "Shared" works everywhere."""
+    result: dict[str, int] = {}
+    for item in common_core.get("items", {}).values():
+        if item.get("templateId") in VBUCKS_CATEGORIES:
+            platform = item.get("attributes", {}).get("platform", "Shared")
+            result[platform] = result.get(platform, 0) + item.get("quantity", 0)
+    return result
+
+
+def get_purchase_info(common_core: dict) -> dict:
+    attributes = common_core.get("stats", {}).get("attributes", {})
+    history = attributes.get("mtx_purchase_history", {})
+    return {
+        "mtx_platform": attributes.get("current_mtx_platform"),
+        "refund_credits": history.get("refundCredits", 0),
+        "refunds_used": history.get("refundsUsed", 0),
+    }
+
+
+def get_linkable_platforms(external_auths: list) -> list:
+    linked = {a.get("type") for a in external_auths}
+    return [p for p in LINKABLE_PLATFORMS if p not in linked]
+
+
 def get_banner_ids(common_core: dict) -> list:
     result = []
     for item in common_core.get("items", {}).values():
@@ -74,9 +102,17 @@ def get_account_stats(athena: dict) -> dict:
 
     return {
         "account_level": attributes.get("accountLevel", 0),
+        "lifetime_wins": attributes.get("lifetime_wins", 0),
         "total_wins": sum(s.get("numWins", 0) for s in past_seasons),
         "total_matches": sum(s.get("numHighBracket", 0) + s.get("numLowBracket", 0) for s in past_seasons),
         "last_match_end": attributes.get("last_match_end_datetime"),
+        "current_season": {
+            "season": attributes.get("season_num"),
+            "level": attributes.get("level"),
+            # Epic only sends book_purchased when the pass was bought
+            "battle_pass_purchased": attributes.get("book_purchased", False),
+            "wins": attributes.get("season", {}).get("numWins", 0),
+        },
         "past_seasons": [
             {
                 "season": s.get("seasonNumber"),

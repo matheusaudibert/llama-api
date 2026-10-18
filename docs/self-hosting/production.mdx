@@ -1,0 +1,115 @@
+---
+title: "Production deploy"
+description: "Put the API online on any server or platform that runs Docker containers."
+icon: "server"
+---
+
+The repository already has a ready-to-use `Dockerfile`. Anything that builds or runs a Docker image works: your own VPS, a platform like Railway or Fly.io, or a self-hosted panel like Coolify, Dokploy or CapRover.
+
+<Warning>
+  Serverless platforms such as Vercel and Netlify do not work. The API keeps login sessions in memory and waits for the Epic authorization in the background, so it needs a process that stays running.
+</Warning>
+
+## Prerequisites
+
+- A server or platform that runs Docker containers
+- This repository on your GitHub (for platforms that build from the repository)
+- Optional: a domain or subdomain, for example `api.yourdomain.com`, to serve the API over HTTPS
+
+<Steps>
+  <Step title="Generate the API key">
+    ```bash
+    python -c "import secrets; print(secrets.token_urlsafe(32))"
+    ```
+
+    Keep the value. Use the same key in your bot's `.env`.
+  </Step>
+  <Step title="Build and run the image">
+    On a platform that builds from GitHub, point it to the repository, branch `main`, and pick **Dockerfile** as the build method (`/Dockerfile`, context `/`).
+
+    On a server with Docker, run:
+
+    ```bash
+    git clone https://github.com/your-user/llama-api.git
+    cd llama-api
+    docker build -t llama-api .
+    docker run -d --name llama-api \
+      -p 127.0.0.1:8000:8000 \
+      -e API_KEY="paste-the-key-here" \
+      --restart unless-stopped \
+      llama-api
+    ```
+
+    The container listens on port `8000`.
+  </Step>
+  <Step title="Set the environment variables">
+    | Variable | Required | Default | Description |
+    |---|---|---|---|
+    | `API_KEY` | Yes | | Key the bot sends in the `X-API-Key` header |
+    | `CATALOG_REFRESH_SECONDS` | No | `21600` | How often the fortnite-api.com catalog is reloaded |
+
+    <Warning>
+      The API does not start without `API_KEY`.
+    </Warning>
+  </Step>
+  <Step title="Set up HTTPS">
+    Put the API behind a reverse proxy with TLS. Most managed platforms do this when you set a domain. On a VPS, use Caddy, Nginx or Traefik. Example with Caddy, which issues the certificate automatically:
+
+    ```text Caddyfile
+    api.yourdomain.com {
+        reverse_proxy 127.0.0.1:8000
+    }
+    ```
+
+    uvicorn already runs with `--proxy-headers`, so the proxy's `X-Forwarded-*` headers are respected.
+
+    <Tip>
+      If the bot runs on the same server or Docker network, it can call the API directly at `http://llama-api:8000` without exposing it to the internet.
+    </Tip>
+  </Step>
+  <Step title="Set up the healthcheck">
+    If the platform asks for a healthcheck, use:
+
+    - **Path**: `/health`
+    - **Port**: `8000`
+
+    The `/health` endpoint does not require an API key. The `Dockerfile` also declares a `HEALTHCHECK` with `curl`, which Docker and most platforms pick up.
+  </Step>
+  <Step title="Test">
+    On the first start, expect in the logs:
+
+    ```text
+    Catalog loaded: 16599 cosmetics, 1018 banners
+    Application startup complete.
+    ```
+
+    ```bash
+    curl https://api.yourdomain.com/health
+    ```
+
+    ```json Response
+    { "status": "ok", "cosmetics_loaded": 16599, "active_sessions": 0 }
+    ```
+  </Step>
+</Steps>
+
+## Updates
+
+Sessions live in memory, so **restarting the container disconnects whoever is logged in at that moment**. This also applies to automatic deploys on every push. Prefer updating when the bot has little traffic.
+
+On a server with Docker, to update:
+
+```bash
+git pull
+docker build -t llama-api .
+docker rm -f llama-api
+# run the same docker run from step 2
+```
+
+## Do not scale horizontally
+
+Keep **one replica** and **one worker**. With two instances, a login created on one does not exist on the other and the bot gets random `404`s. The Dockerfile `CMD` already runs uvicorn with a single worker. On platforms with autoscaling, pin the instance count to 1.
+
+## Resources
+
+The API uses little memory: about 120 MB with the catalog loaded. An instance with 512 MB of RAM is enough, even when sharing the server with your bot.

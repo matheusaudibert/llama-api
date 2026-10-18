@@ -4,7 +4,11 @@ description: "Coloque a API no ar em qualquer servidor ou plataforma que rode co
 icon: "server"
 ---
 
-O repositório já tem um `Dockerfile` pronto. Qualquer lugar que construa ou rode uma imagem Docker serve: uma VPS sua, uma plataforma como Railway, Render ou Fly.io, ou um painel self-hosted como Coolify, Dokploy ou CapRover.
+O repositório já tem um `Dockerfile` pronto. Qualquer lugar que construa ou rode uma imagem Docker serve: uma VPS sua, uma plataforma como Railway ou Fly.io, ou um painel self-hosted como Coolify, Dokploy ou CapRover.
+
+<Warning>
+  Plataformas serverless, como Vercel e Netlify, não funcionam. A API guarda as sessões de login em memória e espera a autorização da Epic em background, então precisa de um processo que fique rodando.
+</Warning>
 
 ## Pré-requisitos
 
@@ -26,14 +30,14 @@ O repositório já tem um `Dockerfile` pronto. Qualquer lugar que construa ou ro
     Em um servidor com Docker, rode:
 
     ```bash
-    git clone https://github.com/seu-usuario/fortnite-account-api.git
-    cd fortnite-account-api
-    docker build -t fortnite-account-api .
-    docker run -d --name fortnite-account-api \
+    git clone https://github.com/seu-usuario/llama-api.git
+    cd llama-api
+    docker build -t llama-api .
+    docker run -d --name llama-api \
       -p 127.0.0.1:8000:8000 \
       -e API_KEY="cole-a-chave-aqui" \
       --restart unless-stopped \
-      fortnite-account-api
+      llama-api
     ```
 
     O container escuta na porta `8000`.
@@ -60,7 +64,7 @@ O repositório já tem um `Dockerfile` pronto. Qualquer lugar que construa ou ro
     O uvicorn já roda com `--proxy-headers`, então os headers `X-Forwarded-*` do proxy são respeitados.
 
     <Tip>
-      Se o bot roda no mesmo servidor ou na mesma rede Docker, ele pode chamar a API direto por `http://fortnite-account-api:8000` sem expô-la na internet.
+      Se o bot roda no mesmo servidor ou na mesma rede Docker, ele pode chamar a API direto por `http://llama-api:8000` sem expô-la na internet.
     </Tip>
   </Step>
   <Step title="Configure o healthcheck">
@@ -97,8 +101,8 @@ Em um servidor com Docker, para atualizar:
 
 ```bash
 git pull
-docker build -t fortnite-account-api .
-docker rm -f fortnite-account-api
+docker build -t llama-api .
+docker rm -f llama-api
 # rode o mesmo docker run do passo 2
 ```
 

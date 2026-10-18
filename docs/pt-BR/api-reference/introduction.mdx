@@ -1,0 +1,43 @@
+---
+title: "Visão geral"
+description: "URL base, autenticação e convenções da API."
+icon: "book-open"
+---
+
+## URL base
+
+A URL base é o domínio onde você hospedou a API, por exemplo `https://api.seudominio.com`. No playground desta documentação, edite o campo `host` para apontar para a sua instância.
+
+<Info>
+  A API foi feita para ser self-hosted. Para usar a instância hospedada em `https://llama-api.audibert.dev`, peça uma API key [abrindo uma issue no GitHub](https://github.com/matheusaudibert/llama-api/issues/new).
+</Info>
+
+## Autenticação
+
+Todos os endpoints, exceto `GET /health`, exigem o header `X-API-Key` com o valor da variável `API_KEY` configurada na API.
+
+```bash
+curl https://api.seudominio.com/auth/device \
+  -X POST \
+  -H "X-API-Key: sua-chave"
+```
+
+Sem o header, ou com uma chave errada, a resposta é `401`.
+
+<Warning>
+  A API key dá acesso a iniciar logins e ler contas. Guarde-a só no servidor do bot, nunca no código-fonte ou em clientes.
+</Warning>
+
+## Fluxo típico
+
+1. `POST /auth/device`: inicia o login e devolve o link da Epic.
+2. `GET /auth/{session_id}`: consulta até `completed`.
+3. `GET /accounts/{session_id}/summary` e `GET /accounts/{session_id}/locker`: leem os dados.
+4. `POST /render/{category}`: opcional, gera as imagens do locker a partir dos itens salvos.
+5. `DELETE /auth/{session_id}`: encerra a sessão.
+
+Veja o detalhe de cada endpoint no menu lateral e o fluxo completo em [Fluxo de login](/pt-BR/guides/login-flow).
+
+## Spec OpenAPI
+
+A própria API serve o spec em `/openapi.json` e um Swagger UI em `/docs`. Use o spec para gerar tipos no seu bot.

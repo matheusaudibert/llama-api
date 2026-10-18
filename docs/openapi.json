@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Fortnite Account API",
-    "description": "Faz login numa conta Epic Games pelo device code flow e lê os dados do Fortnite.",
+    "title": "Llama API",
+    "description": "Logs in to an Epic Games account with the device code flow and reads the Fortnite data.",
     "version": "1.0.0"
   },
   "paths": {
@@ -12,7 +12,7 @@
           "Health"
         ],
         "summary": "Health check",
-        "description": "Não exige API key. Use no healthcheck da hospedagem.",
+        "description": "Does not require an API key. Use it as your host's healthcheck.",
         "operationId": "health_health_get",
         "responses": {
           "200": {
@@ -32,10 +32,10 @@
     "/auth/device": {
       "post": {
         "tags": [
-          "Autenticação"
+          "Authentication"
         ],
-        "summary": "Iniciar login",
-        "description": "Cria um device code na Epic e começa a esperar a autorização em background. Mostre `verification_url` ao jogador.",
+        "summary": "Start login",
+        "description": "Creates an Epic device code and waits for the authorization in the background. Show `verification_url` to the player.",
         "operationId": "start_device_login_auth_device_post",
         "responses": {
           "200": {
@@ -49,7 +49,7 @@
             }
           },
           "401": {
-            "description": "API key ausente ou inválida",
+            "description": "Missing or invalid API key",
             "content": {
               "application/json": {
                 "schema": {
@@ -59,7 +59,7 @@
             }
           },
           "502": {
-            "description": "Não foi possível criar o device code na Epic",
+            "description": "Could not create the Epic device code",
             "content": {
               "application/json": {
                 "schema": {
@@ -79,10 +79,10 @@
     "/auth/{session_id}": {
       "get": {
         "tags": [
-          "Autenticação"
+          "Authentication"
         ],
-        "summary": "Status do login",
-        "description": "Consulte a cada ~3 s até o status sair de `pending`.",
+        "summary": "Login status",
+        "description": "Poll every ~3 s until the status leaves `pending`.",
         "operationId": "login_status_auth__session_id__get",
         "security": [
           {
@@ -112,7 +112,7 @@
             }
           },
           "401": {
-            "description": "API key ausente ou inválida",
+            "description": "Missing or invalid API key",
             "content": {
               "application/json": {
                 "schema": {
@@ -122,7 +122,7 @@
             }
           },
           "404": {
-            "description": "Sessão não encontrada ou já removida",
+            "description": "Session not found or already removed",
             "content": {
               "application/json": {
                 "schema": {
@@ -145,10 +145,10 @@
       },
       "delete": {
         "tags": [
-          "Autenticação"
+          "Authentication"
         ],
-        "summary": "Encerrar sessão",
-        "description": "Invalida o token na Epic e apaga a sessão da memória.",
+        "summary": "End session",
+        "description": "Revokes the Epic token and deletes the session from memory.",
         "operationId": "logout_auth__session_id__delete",
         "security": [
           {
@@ -171,7 +171,7 @@
             "description": "Successful Response"
           },
           "401": {
-            "description": "API key ausente ou inválida",
+            "description": "Missing or invalid API key",
             "content": {
               "application/json": {
                 "schema": {
@@ -181,7 +181,7 @@
             }
           },
           "404": {
-            "description": "Sessão não encontrada ou já removida",
+            "description": "Session not found or already removed",
             "content": {
               "application/json": {
                 "schema": {
@@ -206,10 +206,10 @@
     "/accounts/{session_id}/summary": {
       "get": {
         "tags": [
-          "Conta"
+          "Account"
         ],
-        "summary": "Resumo da conta",
-        "description": "Dados da conta Epic, V-Bucks, plataformas conectadas e estatísticas do Battle Royale.",
+        "summary": "Account summary",
+        "description": "Epic account data, V-Bucks, connected platforms and Battle Royale stats.",
         "operationId": "account_summary_accounts__session_id__summary_get",
         "security": [
           {
@@ -239,7 +239,7 @@
             }
           },
           "401": {
-            "description": "API key ausente ou inválida",
+            "description": "Missing or invalid API key",
             "content": {
               "application/json": {
                 "schema": {
@@ -249,7 +249,7 @@
             }
           },
           "404": {
-            "description": "Sessão não encontrada ou já removida",
+            "description": "Session not found or already removed",
             "content": {
               "application/json": {
                 "schema": {
@@ -259,7 +259,7 @@
             }
           },
           "409": {
-            "description": "Login não concluído (pending, expired ou error)",
+            "description": "Login not completed (pending, expired or error)",
             "content": {
               "application/json": {
                 "schema": {
@@ -269,7 +269,7 @@
             }
           },
           "410": {
-            "description": "Token da Epic expirou, inicie um novo login",
+            "description": "Epic token expired, start a new login",
             "content": {
               "application/json": {
                 "schema": {
@@ -279,7 +279,7 @@
             }
           },
           "502": {
-            "description": "A Epic Games retornou um erro",
+            "description": "Epic Games returned an error",
             "content": {
               "application/json": {
                 "schema": {
@@ -304,10 +304,10 @@
     "/accounts/{session_id}/locker": {
       "get": {
         "tags": [
-          "Conta"
+          "Account"
         ],
         "summary": "Locker",
-        "description": "Todos os cosméticos da conta, separados por categoria e ordenados por raridade.",
+        "description": "Every cosmetic on the account, split by category and sorted by rarity.",
         "operationId": "account_locker_accounts__session_id__locker_get",
         "security": [
           {
@@ -337,7 +337,7 @@
             }
           },
           "401": {
-            "description": "API key ausente ou inválida",
+            "description": "Missing or invalid API key",
             "content": {
               "application/json": {
                 "schema": {
@@ -347,7 +347,7 @@
             }
           },
           "404": {
-            "description": "Sessão não encontrada ou já removida",
+            "description": "Session not found or already removed",
             "content": {
               "application/json": {
                 "schema": {
@@ -357,7 +357,7 @@
             }
           },
           "409": {
-            "description": "Login não concluído (pending, expired ou error)",
+            "description": "Login not completed (pending, expired or error)",
             "content": {
               "application/json": {
                 "schema": {
@@ -367,7 +367,7 @@
             }
           },
           "410": {
-            "description": "Token da Epic expirou, inicie um novo login",
+            "description": "Epic token expired, start a new login",
             "content": {
               "application/json": {
                 "schema": {
@@ -377,7 +377,7 @@
             }
           },
           "502": {
-            "description": "A Epic Games retornou um erro",
+            "description": "Epic Games returned an error",
             "content": {
               "application/json": {
                 "schema": {
@@ -402,10 +402,10 @@
     "/render/{category}": {
       "post": {
         "tags": [
-          "Imagens"
+          "Images"
         ],
-        "summary": "Imagem do locker",
-        "description": "Gera um PNG com os itens de uma categoria, no estilo dos checkers. `mythics` junta os itens míticos de todas as categorias. Não exige sessão: envie os itens salvos do `/locker`.",
+        "summary": "Locker image",
+        "description": "Renders a PNG with the items of one category, in skin checker style. `mythics` gathers the mythic items of every category. No session needed: send the items saved from `/locker`.",
         "operationId": "render_locker_render__category__post",
         "security": [
           {
@@ -434,13 +434,13 @@
         },
         "responses": {
           "200": {
-            "description": "PNG com os itens da categoria",
+            "description": "PNG with the items of the category",
             "content": {
               "image/png": {}
             }
           },
           "401": {
-            "description": "API key ausente ou inválida",
+            "description": "Missing or invalid API key",
             "content": {
               "application/json": {
                 "schema": {
@@ -450,7 +450,7 @@
             }
           },
           "422": {
-            "description": "Nenhum item da categoria na lista enviada",
+            "description": "No item of the category in the list",
             "content": {
               "application/json": {
                 "schema": {
@@ -485,7 +485,7 @@
               }
             ],
             "title": "Email",
-            "description": "Email sem máscara. Mascare antes de exibir em canais públicos."
+            "description": "Unmasked email. Mask it before showing it in public channels."
           },
           "email_verified": {
             "type": "boolean",
@@ -523,17 +523,17 @@
               }
             ],
             "title": "Country",
-            "description": "Código do país (ISO 3166-1 alpha-2)."
+            "description": "Country code (ISO 3166-1 alpha-2)."
           },
           "tfa_enabled": {
             "type": "boolean",
             "title": "Tfa Enabled",
-            "description": "Se a autenticação de dois fatores está ativa."
+            "description": "Whether two-factor authentication is on."
           },
           "minor_verified": {
             "type": "boolean",
             "title": "Minor Verified",
-            "description": "Se a conta tem controle parental / verificação de menor."
+            "description": "Whether the account has parental controls / minor verification."
           },
           "account_created": {
             "anyOf": [
@@ -545,7 +545,7 @@
               }
             ],
             "title": "Account Created",
-            "description": "Criação da conta Epic (ISO 8601)."
+            "description": "Epic account creation date (ISO 8601)."
           },
           "profile_created": {
             "anyOf": [
@@ -557,12 +557,76 @@
               }
             ],
             "title": "Profile Created",
-            "description": "Criação do perfil no Fortnite (ISO 8601)."
+            "description": "Fortnite profile creation date (ISO 8601)."
+          },
+          "last_login": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Login",
+            "description": "Last login to the Epic account (ISO 8601)."
+          },
+          "can_change_display_name": {
+            "type": "boolean",
+            "title": "Can Change Display Name",
+            "description": "Whether the display name can be changed right now."
+          },
+          "display_name_changes": {
+            "type": "integer",
+            "title": "Display Name Changes",
+            "description": "How many times the display name was changed."
+          },
+          "last_display_name_change": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Display Name Change",
+            "description": "Last display name change (ISO 8601)."
           },
           "vbucks": {
             "type": "integer",
             "title": "Vbucks",
-            "description": "Total de V-Bucks somando todas as fontes."
+            "description": "Total V-Bucks across all sources."
+          },
+          "vbucks_by_platform": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Vbucks By Platform",
+            "description": "V-Bucks per platform, e.g. {\"Shared\": 100, \"PSN\": 3300}. Platform V-Bucks can only be spent on that platform."
+          },
+          "mtx_platform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mtx Platform",
+            "description": "Platform the V-Bucks purchases are tied to, e.g. EpicPC, PSN, Live."
+          },
+          "refund_credits": {
+            "type": "integer",
+            "title": "Refund Credits",
+            "description": "Refund tickets left."
+          },
+          "refunds_used": {
+            "type": "integer",
+            "title": "Refunds Used",
+            "description": "Refund tickets already used."
           },
           "external_auths": {
             "items": {
@@ -570,21 +634,34 @@
             },
             "type": "array",
             "title": "External Auths",
-            "description": "Plataformas conectadas à conta."
+            "description": "Platforms connected to the account."
+          },
+          "linkable_platforms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Linkable Platforms",
+            "description": "Consoles (psn, xbl, nintendo) not linked to the account, which a new owner can link."
           },
           "account_level": {
             "type": "integer",
             "title": "Account Level"
           },
+          "lifetime_wins": {
+            "type": "integer",
+            "title": "Lifetime Wins",
+            "description": "Wins over the whole account, current season included."
+          },
           "total_wins": {
             "type": "integer",
             "title": "Total Wins",
-            "description": "Soma das vitórias de todas as temporadas passadas."
+            "description": "Wins summed over all past seasons."
           },
           "total_matches": {
             "type": "integer",
             "title": "Total Matches",
-            "description": "Soma das partidas de todas as temporadas passadas."
+            "description": "Matches summed over all past seasons."
           },
           "last_match_end": {
             "anyOf": [
@@ -596,7 +673,11 @@
               }
             ],
             "title": "Last Match End",
-            "description": "Fim da última partida jogada (ISO 8601)."
+            "description": "End of the last match played (ISO 8601)."
+          },
+          "current_season": {
+            "$ref": "#/components/schemas/PastSeason",
+            "description": "Current season: number, level, battle pass and wins."
           },
           "past_seasons": {
             "items": {
@@ -613,11 +694,19 @@
           "email_verified",
           "tfa_enabled",
           "minor_verified",
+          "can_change_display_name",
+          "display_name_changes",
           "vbucks",
+          "vbucks_by_platform",
+          "refund_credits",
+          "refunds_used",
           "external_auths",
+          "linkable_platforms",
           "account_level",
+          "lifetime_wins",
           "total_wins",
           "total_matches",
+          "current_season",
           "past_seasons"
         ],
         "title": "AccountSummary"
@@ -627,17 +716,17 @@
           "id": {
             "type": "string",
             "title": "Id",
-            "description": "ID do cosmético em minúsculas, ex: cid_028_athena_commando_f."
+            "description": "Lowercase cosmetic ID, e.g. cid_028_athena_commando_f."
           },
           "name": {
             "type": "string",
             "title": "Name",
-            "description": "Nome do item. Igual ao `id` quando o item não está no catálogo."
+            "description": "Item name. Same as `id` when the item is not in the catalog."
           },
           "rarity": {
             "type": "string",
             "title": "Rarity",
-            "description": "Common, Uncommon, Rare, Epic, Legendary, Mythic ou uma série, como Icon Series."
+            "description": "Common, Uncommon, Rare, Epic, Legendary, Mythic or a series, such as Icon Series."
           },
           "series": {
             "anyOf": [
@@ -649,7 +738,7 @@
               }
             ],
             "title": "Series",
-            "description": "Série do item, quando houver."
+            "description": "Item series, if any."
           },
           "type": {
             "anyOf": [
@@ -661,7 +750,7 @@
               }
             ],
             "title": "Type",
-            "description": "Tipo no fortnite-api, ex: outfit, backpack, pickaxe, emote, glider."
+            "description": "Type on fortnite-api, e.g. outfit, backpack, pickaxe, emote, glider."
           },
           "images": {
             "$ref": "#/components/schemas/CosmeticImages"
@@ -672,22 +761,22 @@
             },
             "type": "array",
             "title": "Owned Styles",
-            "description": "Tags dos estilos que o jogador desbloqueou."
+            "description": "Tags of the styles the player unlocked."
           },
           "is_exclusive": {
             "type": "boolean",
             "title": "Is Exclusive",
-            "description": "Faz parte da lista de itens exclusivos (Renegade Raider, Ghoul Trooper…)."
+            "description": "Part of the exclusive items list (Renegade Raider, Ghoul Trooper…)."
           },
           "is_mythic": {
             "type": "boolean",
             "title": "Is Mythic",
-            "description": "Item raro/OG: de uma lista de raros que não volta à loja há 2 anos, ou com o estilo exclusivo dos donos originais."
+            "description": "Rare/OG item: on the rare items list and out of the shop for 2 years, or with the original owners' exclusive style."
           },
           "in_catalog": {
             "type": "boolean",
             "title": "In Catalog",
-            "description": "False quando o fortnite-api ainda não tem dados deste item."
+            "description": "False when fortnite-api has no data for this item yet."
           }
         },
         "type": "object",
@@ -747,17 +836,17 @@
           "session_id": {
             "type": "string",
             "title": "Session Id",
-            "description": "ID opaco usado em todas as outras chamadas deste login."
+            "description": "Opaque ID used in every other call of this login."
           },
           "verification_url": {
             "type": "string",
             "title": "Verification Url",
-            "description": "Página da Epic Games onde o jogador autoriza o login."
+            "description": "Epic Games page where the player authorizes the login."
           },
           "expires_in": {
             "type": "integer",
             "title": "Expires In",
-            "description": "Segundos até o link de verificação expirar."
+            "description": "Seconds until the verification link expires."
           }
         },
         "type": "object",
@@ -793,7 +882,7 @@
               }
             ],
             "title": "Type",
-            "description": "Plataforma, ex: psn, xbl, nintendo, github, steam."
+            "description": "Platform, e.g. psn, xbl, nintendo, github, steam."
           },
           "display_name": {
             "anyOf": [
@@ -805,7 +894,7 @@
               }
             ],
             "title": "Display Name",
-            "description": "Nome do jogador na plataforma."
+            "description": "Player name on the platform."
           },
           "date_added": {
             "anyOf": [
@@ -817,7 +906,7 @@
               }
             ],
             "title": "Date Added",
-            "description": "Data em que a plataforma foi conectada (ISO 8601)."
+            "description": "When the platform was connected (ISO 8601)."
           }
         },
         "type": "object",
@@ -846,12 +935,12 @@
           "cosmetics_loaded": {
             "type": "integer",
             "title": "Cosmetics Loaded",
-            "description": "Cosméticos no catálogo em memória."
+            "description": "Cosmetics in the in-memory catalog."
           },
           "active_sessions": {
             "type": "integer",
             "title": "Active Sessions",
-            "description": "Sessões de login em memória."
+            "description": "Login sessions in memory."
           }
         },
         "type": "object",
@@ -866,7 +955,7 @@
         "properties": {
           "counts": {
             "$ref": "#/components/schemas/LockerCounts",
-            "description": "Quantidade de itens por categoria."
+            "description": "Item count per category."
           },
           "skins": {
             "items": {
@@ -1011,7 +1100,7 @@
               "error"
             ],
             "title": "Status",
-            "description": "Estado atual do login."
+            "description": "Current login state."
           },
           "account_id": {
             "anyOf": [
@@ -1023,7 +1112,7 @@
               }
             ],
             "title": "Account Id",
-            "description": "ID da conta Epic. Presente quando `completed`."
+            "description": "Epic account ID. Present when `completed`."
           },
           "display_name": {
             "anyOf": [
@@ -1035,7 +1124,7 @@
               }
             ],
             "title": "Display Name",
-            "description": "Nome de exibição da conta. Presente quando `completed`."
+            "description": "Account display name. Present when `completed`."
           },
           "error": {
             "anyOf": [
@@ -1047,7 +1136,7 @@
               }
             ],
             "title": "Error",
-            "description": "Mensagem de erro quando `error`."
+            "description": "Error message when `error`."
           }
         },
         "type": "object",
@@ -1068,7 +1157,7 @@
               }
             ],
             "title": "Season",
-            "description": "Número da temporada."
+            "description": "Season number."
           },
           "level": {
             "anyOf": [
@@ -1080,18 +1169,18 @@
               }
             ],
             "title": "Level",
-            "description": "Nível alcançado na temporada."
+            "description": "Level reached in the season."
           },
           "battle_pass_purchased": {
             "type": "boolean",
             "title": "Battle Pass Purchased",
-            "description": "Se o passe de batalha foi comprado.",
+            "description": "Whether the battle pass was purchased.",
             "default": false
           },
           "wins": {
             "type": "integer",
             "title": "Wins",
-            "description": "Vitórias na temporada.",
+            "description": "Wins in the season.",
             "default": 0
           }
         },
@@ -1116,7 +1205,7 @@
             "type": "string",
             "pattern": "^[A-Za-z0-9_-]{1,128}$",
             "title": "Id",
-            "description": "ID do cosmético, como vem no `/locker`."
+            "description": "Cosmetic ID, as returned by `/locker`."
           },
           "owned_styles": {
             "items": {
@@ -1124,7 +1213,7 @@
             },
             "type": "array",
             "title": "Owned Styles",
-            "description": "Estilos desbloqueados. Usado para reconhecer os OGs."
+            "description": "Unlocked styles. Used to recognize OGs."
           }
         },
         "type": "object",
@@ -1140,7 +1229,7 @@
             "maxLength": 64,
             "minLength": 1,
             "title": "Display Name",
-            "description": "Nick da conta, exibido no rodapé."
+            "description": "Account nickname, shown in the header."
           },
           "items": {
             "items": {
@@ -1149,7 +1238,7 @@
             "type": "array",
             "maxItems": 5000,
             "title": "Items",
-            "description": "Itens da conta. Pode mandar os itens do `/locker` direto: campos extras são ignorados e só entram os da categoria pedida."
+            "description": "Account items. You can send the `/locker` items as they are: extra fields are ignored and only the requested category is drawn."
           }
         },
         "type": "object",
@@ -1208,25 +1297,25 @@
       }
     }
   },
+  "security": [
+    {
+      "APIKeyHeader": []
+    }
+  ],
   "servers": [
     {
       "url": "https://{host}",
-      "description": "Sua instância",
+      "description": "Your instance",
       "variables": {
         "host": {
           "default": "api.seudominio.com",
-          "description": "Domínio onde a API está hospedada"
+          "description": "Domain where the API is hosted"
         }
       }
     },
     {
       "url": "http://localhost:8000",
       "description": "Local"
-    }
-  ],
-  "security": [
-    {
-      "APIKeyHeader": []
     }
   ]
 }

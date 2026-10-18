@@ -1,28 +1,28 @@
 ---
-title: "Locker e cosméticos"
-description: "Formato dos itens do locker, ordenação, raridades e como usar as imagens."
+title: "Locker and cosmetics"
+description: "Locker item format, sorting, rarities and how to use the images."
 icon: "shirt"
 ---
 
-`GET /accounts/{session_id}/locker` devolve todos os cosméticos da conta, separados por categoria.
+`GET /accounts/{session_id}/locker` returns every cosmetic on the account, split by category.
 
-## Categorias
+## Categories
 
-| Campo | Conteúdo |
+| Field | Content |
 |---|---|
-| `skins` | Trajes (`cid_*`, `character_*`) |
-| `backpacks` | Mochilas (`bid_*`) |
-| `pickaxes` | Picaretas (`pickaxe_*`) |
+| `skins` | Outfits (`cid_*`, `character_*`) |
+| `backpacks` | Back blings (`bid_*`) |
+| `pickaxes` | Pickaxes (`pickaxe_*`) |
 | `emotes` | Emotes (`eid_*`) |
-| `gliders` | Asas-deltas e guarda-chuvas |
-| `wraps` | Envelopamentos |
+| `gliders` | Gliders and umbrellas |
+| `wraps` | Wraps |
 | `sprays` | Sprays |
-| `others` | Tudo que não se encaixa acima (músicas, telas de carregamento, etc.) |
-| `banners` | Banners do perfil |
+| `others` | Everything else (music, loading screens, etc.) |
+| `banners` | Profile banners |
 
-`counts` traz a quantidade de itens por categoria, útil para embeds de resumo.
+`counts` has the number of items per category, handy for summary embeds.
 
-## Formato de um item
+## Item format
 
 ```json
 {
@@ -43,17 +43,17 @@ icon: "shirt"
 }
 ```
 
-## Raridade e ordenação
+## Rarity and sorting
 
-`rarity` vem do fortnite-api (`Common`, `Uncommon`, `Rare`, `Epic`, `Legendary` ou uma série, como `Icon Series`, `MARVEL SERIES` e `DC SERIES`). Itens míticos viram `Mythic`, independente da raridade no jogo, e têm `is_mythic: true`.
+`rarity` comes from fortnite-api (`Common`, `Uncommon`, `Rare`, `Epic`, `Legendary` or a series, such as `Icon Series`, `MARVEL SERIES` and `DC SERIES`). Mythic items become `Mythic`, whatever their in-game rarity, and have `is_mythic: true`.
 
-## Míticos e OGs
+## Mythics and OGs
 
-Um item é mítico em dois casos:
+An item is mythic in two cases:
 
-1. **Itens que voltaram à loja, mas os donos originais têm um estilo exclusivo.** Só contam como míticos com esse estilo em `owned_styles`. O nome vira `OG …` e `images.icon` passa a mostrar o estilo.
+1. **Items that came back to the shop, but the original owners have an exclusive style.** They only count as mythic with that style in `owned_styles`. The name becomes `OG …` and `images.icon` shows the style.
 
-   | Item | Estilo OG | Tag |
+   | Item | OG style | Tag |
    |---|---|---|
    | Renegade Raider | Black & Gold | `Mat3` |
    | Aerial Assault Trooper | Black & Gold | `Stage2` |
@@ -62,46 +62,46 @@ Um item é mítico em dois casos:
    | Skull Trooper | Purple Glow | `Mat1` |
    | Fishstick | World Cup | `Stage3` |
 
-   Um Renegade Raider comprado na loja depois de dezembro de 2024 aparece como item normal.
+   A Renegade Raider bought in the shop after December 2024 shows up as a normal item.
 
-2. **Itens raros de uma lista fixa** (passes de batalha antigos, promoções, torneios: Black Knight, Travis Scott, Floss…) que **não foram vendidos na loja nos últimos 2 anos**. Quando um item volta à loja, ele deixa de ser mítico sozinho, pelo histórico da loja no fortnite-api.
+2. **Rare items from a fixed list** (old battle passes, promotions, tournaments: Black Knight, Travis Scott, Floss…) that **were not sold in the shop in the last 2 years**. When an item comes back to the shop, it stops being mythic on its own, based on the fortnite-api shop history.
 
-Cada lista já vem ordenada:
+Every list is already sorted:
 
-1. Por raridade: Mythic, Legendary, séries (Dark, Slurp, Star Wars, Marvel, Lava, Frozen, Gaming Legends, Shadow, Icon, DC), Epic, Rare, Uncommon, Common.
-2. Entre os míticos, pela ordem dos itens mais raros (Renegade Raider, Ghoul Trooper…).
-3. Por nome.
+1. By rarity: Mythic, Legendary, series (Dark, Slurp, Star Wars, Marvel, Lava, Frozen, Gaming Legends, Shadow, Icon, DC), Epic, Rare, Uncommon, Common.
+2. Among mythics, by the order of the rarest items (Renegade Raider, Ghoul Trooper…).
+3. By name.
 
-`is_exclusive` marca um grupo pequeno de itens muito raros (Renegade Raider, Aerial Assault Trooper, Ghoul Trooper, Skull Trooper, Omega, Fishstick e The Paradigm), útil para um destaque especial.
+`is_exclusive` flags a small group of very rare items (Renegade Raider, Aerial Assault Trooper, Ghoul Trooper, Skull Trooper, Omega, Fishstick and The Paradigm), useful for a special highlight.
 
-## Imagens
+## Images
 
-As URLs em `images` apontam direto para o CDN do fortnite-api.com.
+The URLs in `images` point straight to the fortnite-api.com CDN.
 
-Para uma imagem pronta do locker, use `POST /render/{category}`, com `category` igual a `skins`, `backpacks`, `pickaxes`, `gliders`, `emotes` ou `mythics`. A `mythics` junta os itens míticos de todas essas categorias, com os trajes primeiro. Ela devolve um PNG com um cabeçalho (ícone da categoria, "LOCKER", nome da categoria com a quantidade, logo da Epic Games, nick e data) e uma grade com um card por item, com o fundo da raridade e o nome.
+For a ready-made locker image, use `POST /render/{category}`, with `category` set to `skins`, `backpacks`, `pickaxes`, `gliders`, `emotes` or `mythics`. `mythics` gathers the mythic items of all those categories, outfits first. It returns a PNG with a header (category icon, "LOCKER", category name with the count, Epic Games logo, nickname and date) and a grid with one card per item, with the rarity background and the name.
 
-A rota não usa sessão. Envie os itens que você salvou do `/locker`: dá para gerar e regerar a imagem a qualquer momento, sem um novo login.
+The route does not use a session. Send the items you saved from `/locker`: you can render the image again at any time, without a new login.
 
 ```bash
-curl -X POST https://api.seudominio.com/render/skins \
+curl -X POST https://api.yourdomain.com/render/skins \
   -H "X-API-Key: $API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"display_name": "Jogador123", "items": [{"id": "cid_028_athena_commando_f", "owned_styles": ["Mat3"]}]}' \
+  -d '{"display_name": "Player123", "items": [{"id": "cid_028_athena_commando_f", "owned_styles": ["Mat3"]}]}' \
   -o skins.png
 ```
 
-- Pode mandar os itens de todas as categorias juntos: só os da categoria pedida entram na imagem.
-- Envie `owned_styles`: sem ele, os OGs (Renegade Raider, Ghoul Trooper, Skull Trooper…) não são reconhecidos.
-- Sem nenhum item da categoria, a resposta é `422`.
-- Contas grandes são reduzidas para caber em 2048 px de largura. A primeira imagem de uma conta grande pode levar alguns segundos, porque os ícones são baixados e ficam em cache.
+- You can send the items of every category together: only the requested category goes into the image.
+- Send `owned_styles`: without it, OGs (Renegade Raider, Ghoul Trooper, Skull Trooper…) are not recognized.
+- Without any item of the category, the response is `422`.
+- Large accounts are scaled down to fit 2048 px of width. The first image of a large account can take a few seconds, because the icons are downloaded and then cached.
 
 <Tip>
-  Guarde as imagens baixadas em cache local pelo `id`. Mas só faça cache quando a resposta for `200`: itens recém-lançados podem ainda não ter imagem.
+  Cache the downloaded images locally by `id`. But only cache them when the response is `200`: newly released items may not have an image yet.
 </Tip>
 
-## Itens novos
+## New items
 
-Quando a Epic lança uma skin, ela aparece no locker assim que o jogador a tiver, porque a lista vem direto do perfil da conta. Nome, raridade e imagem dependem do fortnite-api.com:
+When Epic releases a skin, it shows up in the locker as soon as the player owns it, because the list comes straight from the account profile. Name, rarity and image depend on fortnite-api.com:
 
-- Se o item ainda não estiver no catálogo em memória, a API busca só aquele item na hora.
-- Se o fortnite-api.com ainda não tiver o item, ele vem com `in_catalog: false`, `name` igual ao `id` e `rarity: "Common"`. Mostre um placeholder nesse caso.
+- If the item is not in the in-memory catalog yet, the API fetches just that item on demand.
+- If fortnite-api.com does not have the item yet, it comes with `in_catalog: false`, `name` equal to `id` and `rarity: "Common"`. Show a placeholder in that case.

@@ -1,4 +1,6 @@
-# Fortnite Account API
+<img src="docs/llama-api.png" alt="Llama API" width="96">
+
+# Llama API
 
 API HTTP para logar em contas Epic Games (device code flow) e ler os dados do Fortnite: conta, V-Bucks, estatísticas e locker completo. Feita para servir de backend a bots de Discord que mostram as skins dos jogadores.
 
@@ -16,6 +18,10 @@ API HTTP para logar em contas Epic Games (device code flow) e ler os dados do Fo
 
 Todos os endpoints, menos `/health`, exigem o header `X-API-Key`.
 
+## Self-hosted ou hospedada
+
+A API foi feita para ser self-hosted: rode a sua própria instância com a sua própria `API_KEY`. Para usar a instância hospedada em `https://llama-api.audibert.dev`, peça uma API key [abrindo uma issue](https://github.com/matheusaudibert/llama-api/issues/new).
+
 ## Rodando
 
 ```bash
@@ -26,8 +32,8 @@ API_KEY="sua-chave" uvicorn api.main:app --port 8000
 Ou com Docker:
 
 ```bash
-docker build -t fortnite-account-api .
-docker run -p 8000:8000 -e API_KEY="sua-chave" fortnite-account-api
+docker build -t llama-api .
+docker run -p 8000:8000 -e API_KEY="sua-chave" llama-api
 ```
 
 Swagger UI em `http://localhost:8000/docs`.

@@ -5,49 +5,60 @@ from pydantic import BaseModel, Field
 
 
 class DeviceLoginResponse(BaseModel):
-    session_id: str = Field(description="ID opaco usado em todas as outras chamadas deste login.")
-    verification_url: str = Field(description="Página da Epic Games onde o jogador autoriza o login.")
-    expires_in: int = Field(description="Segundos até o link de verificação expirar.")
+    session_id: str = Field(description="Opaque ID used in every other call of this login.")
+    verification_url: str = Field(description="Epic Games page where the player authorizes the login.")
+    expires_in: int = Field(description="Seconds until the verification link expires.")
 
 
 class LoginStatusResponse(BaseModel):
-    status: Literal["pending", "completed", "expired", "error"] = Field(description="Estado atual do login.")
-    account_id: str | None = Field(None, description="ID da conta Epic. Presente quando `completed`.")
-    display_name: str | None = Field(None, description="Nome de exibição da conta. Presente quando `completed`.")
-    error: str | None = Field(None, description="Mensagem de erro quando `error`.")
+    status: Literal["pending", "completed", "expired", "error"] = Field(description="Current login state.")
+    account_id: str | None = Field(None, description="Epic account ID. Present when `completed`.")
+    display_name: str | None = Field(None, description="Account display name. Present when `completed`.")
+    error: str | None = Field(None, description="Error message when `error`.")
 
 
 class ExternalAuth(BaseModel):
-    type: str | None = Field(None, description="Plataforma, ex: psn, xbl, nintendo, github, steam.")
-    display_name: str | None = Field(None, description="Nome do jogador na plataforma.")
-    date_added: str | None = Field(None, description="Data em que a plataforma foi conectada (ISO 8601).")
+    type: str | None = Field(None, description="Platform, e.g. psn, xbl, nintendo, github, steam.")
+    display_name: str | None = Field(None, description="Player name on the platform.")
+    date_added: str | None = Field(None, description="When the platform was connected (ISO 8601).")
 
 
 class PastSeason(BaseModel):
-    season: int | None = Field(None, description="Número da temporada.")
-    level: int | None = Field(None, description="Nível alcançado na temporada.")
-    battle_pass_purchased: bool = Field(False, description="Se o passe de batalha foi comprado.")
-    wins: int = Field(0, description="Vitórias na temporada.")
+    season: int | None = Field(None, description="Season number.")
+    level: int | None = Field(None, description="Level reached in the season.")
+    battle_pass_purchased: bool = Field(False, description="Whether the battle pass was purchased.")
+    wins: int = Field(0, description="Wins in the season.")
 
 
 class AccountSummary(BaseModel):
     account_id: str
     display_name: str
-    email: str | None = Field(None, description="Email sem máscara. Mascare antes de exibir em canais públicos.")
+    email: str | None = Field(None, description="Unmasked email. Mask it before showing it in public channels.")
     email_verified: bool
     name: str | None = None
     last_name: str | None = None
-    country: str | None = Field(None, description="Código do país (ISO 3166-1 alpha-2).")
-    tfa_enabled: bool = Field(description="Se a autenticação de dois fatores está ativa.")
-    minor_verified: bool = Field(description="Se a conta tem controle parental / verificação de menor.")
-    account_created: str | None = Field(None, description="Criação da conta Epic (ISO 8601).")
-    profile_created: str | None = Field(None, description="Criação do perfil no Fortnite (ISO 8601).")
-    vbucks: int = Field(description="Total de V-Bucks somando todas as fontes.")
-    external_auths: list[ExternalAuth] = Field(description="Plataformas conectadas à conta.")
+    country: str | None = Field(None, description="Country code (ISO 3166-1 alpha-2).")
+    tfa_enabled: bool = Field(description="Whether two-factor authentication is on.")
+    minor_verified: bool = Field(description="Whether the account has parental controls / minor verification.")
+    account_created: str | None = Field(None, description="Epic account creation date (ISO 8601).")
+    profile_created: str | None = Field(None, description="Fortnite profile creation date (ISO 8601).")
+    last_login: str | None = Field(None, description="Last login to the Epic account (ISO 8601).")
+    can_change_display_name: bool = Field(description="Whether the display name can be changed right now.")
+    display_name_changes: int = Field(description="How many times the display name was changed.")
+    last_display_name_change: str | None = Field(None, description="Last display name change (ISO 8601).")
+    vbucks: int = Field(description="Total V-Bucks across all sources.")
+    vbucks_by_platform: dict[str, int] = Field(description="V-Bucks per platform, e.g. {\"Shared\": 100, \"PSN\": 3300}. Platform V-Bucks can only be spent on that platform.")
+    mtx_platform: str | None = Field(None, description="Platform the V-Bucks purchases are tied to, e.g. EpicPC, PSN, Live.")
+    refund_credits: int = Field(description="Refund tickets left.")
+    refunds_used: int = Field(description="Refund tickets already used.")
+    external_auths: list[ExternalAuth] = Field(description="Platforms connected to the account.")
+    linkable_platforms: list[str] = Field(description="Consoles (psn, xbl, nintendo) not linked to the account, which a new owner can link.")
     account_level: int
-    total_wins: int = Field(description="Soma das vitórias de todas as temporadas passadas.")
-    total_matches: int = Field(description="Soma das partidas de todas as temporadas passadas.")
-    last_match_end: str | None = Field(None, description="Fim da última partida jogada (ISO 8601).")
+    lifetime_wins: int = Field(description="Wins over the whole account, current season included.")
+    total_wins: int = Field(description="Wins summed over all past seasons.")
+    total_matches: int = Field(description="Matches summed over all past seasons.")
+    last_match_end: str | None = Field(None, description="End of the last match played (ISO 8601).")
+    current_season: PastSeason = Field(description="Current season: number, level, battle pass and wins.")
     past_seasons: list[PastSeason]
 
 
@@ -58,16 +69,16 @@ class CosmeticImages(BaseModel):
 
 
 class Cosmetic(BaseModel):
-    id: str = Field(description="ID do cosmético em minúsculas, ex: cid_028_athena_commando_f.")
-    name: str = Field(description="Nome do item. Igual ao `id` quando o item não está no catálogo.")
-    rarity: str = Field(description="Common, Uncommon, Rare, Epic, Legendary, Mythic ou uma série, como Icon Series.")
-    series: str | None = Field(None, description="Série do item, quando houver.")
-    type: str | None = Field(None, description="Tipo no fortnite-api, ex: outfit, backpack, pickaxe, emote, glider.")
+    id: str = Field(description="Lowercase cosmetic ID, e.g. cid_028_athena_commando_f.")
+    name: str = Field(description="Item name. Same as `id` when the item is not in the catalog.")
+    rarity: str = Field(description="Common, Uncommon, Rare, Epic, Legendary, Mythic or a series, such as Icon Series.")
+    series: str | None = Field(None, description="Item series, if any.")
+    type: str | None = Field(None, description="Type on fortnite-api, e.g. outfit, backpack, pickaxe, emote, glider.")
     images: CosmeticImages
-    owned_styles: list[str] = Field(description="Tags dos estilos que o jogador desbloqueou.")
-    is_exclusive: bool = Field(description="Faz parte da lista de itens exclusivos (Renegade Raider, Ghoul Trooper…).")
-    is_mythic: bool = Field(description="Item raro/OG: de uma lista de raros que não volta à loja há 2 anos, ou com o estilo exclusivo dos donos originais.")
-    in_catalog: bool = Field(description="False quando o fortnite-api ainda não tem dados deste item.")
+    owned_styles: list[str] = Field(description="Tags of the styles the player unlocked.")
+    is_exclusive: bool = Field(description="Part of the exclusive items list (Renegade Raider, Ghoul Trooper…).")
+    is_mythic: bool = Field(description="Rare/OG item: on the rare items list and out of the shop for 2 years, or with the original owners' exclusive style.")
+    in_catalog: bool = Field(description="False when fortnite-api has no data for this item yet.")
 
 
 class LockerCounts(BaseModel):
@@ -83,7 +94,7 @@ class LockerCounts(BaseModel):
 
 
 class Locker(BaseModel):
-    counts: LockerCounts = Field(description="Quantidade de itens por categoria.")
+    counts: LockerCounts = Field(description="Item count per category.")
     skins: list[Cosmetic]
     backpacks: list[Cosmetic]
     pickaxes: list[Cosmetic]
@@ -105,22 +116,22 @@ class RenderCategory(str, Enum):
 
 
 class RenderItem(BaseModel):
-    id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,128}$", description="ID do cosmético, como vem no `/locker`.")
-    owned_styles: list[str] = Field(default_factory=list, description="Estilos desbloqueados. Usado para reconhecer os OGs.")
+    id: str = Field(pattern=r"^[A-Za-z0-9_-]{1,128}$", description="Cosmetic ID, as returned by `/locker`.")
+    owned_styles: list[str] = Field(default_factory=list, description="Unlocked styles. Used to recognize OGs.")
 
 
 class RenderRequest(BaseModel):
-    display_name: str = Field(min_length=1, max_length=64, description="Nick da conta, exibido no rodapé.")
+    display_name: str = Field(min_length=1, max_length=64, description="Account nickname, shown in the header.")
     items: list[RenderItem] = Field(
         max_length=5000,
-        description="Itens da conta. Pode mandar os itens do `/locker` direto: campos extras são ignorados e só entram os da categoria pedida.",
+        description="Account items. You can send the `/locker` items as they are: extra fields are ignored and only the requested category is drawn.",
     )
 
 
 class Health(BaseModel):
     status: Literal["ok"]
-    cosmetics_loaded: int = Field(description="Cosméticos no catálogo em memória.")
-    active_sessions: int = Field(description="Sessões de login em memória.")
+    cosmetics_loaded: int = Field(description="Cosmetics in the in-memory catalog.")
+    active_sessions: int = Field(description="Login sessions in memory.")
 
 
 class ErrorResponse(BaseModel):

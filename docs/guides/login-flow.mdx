@@ -1,27 +1,27 @@
 ---
-title: "Fluxo de login"
-description: "Como funciona o login por device code, os estados da sessão e quando cada uma expira."
+title: "Login flow"
+description: "How the device code login works, the session states and when each one expires."
 icon: "key"
 ---
 
-A API usa o **device code flow** da Epic Games. O jogador nunca digita senha no seu bot: ele abre uma página oficial da Epic e aprova o acesso.
+The API uses the Epic Games **device code flow**. The player never types a password into your bot: they open an official Epic page and approve the access.
 
-## Estados da sessão
+## Session states
 
-`POST /auth/device` cria uma sessão e devolve o `session_id`. A partir daí, a API espera a aprovação em background e a sessão passa por estes estados:
+`POST /auth/device` creates a session and returns the `session_id`. From then on, the API waits for the approval in the background and the session goes through these states:
 
-| Status | Significado | O que o bot deve fazer |
+| Status | Meaning | What the bot should do |
 |---|---|---|
-| `pending` | Esperando o jogador autorizar | Continuar consultando `GET /auth/{session_id}` |
-| `completed` | Login feito | Chamar `/summary` e `/locker` |
-| `expired` | O link expirou sem autorização (~10 min) | Pedir para o jogador tentar de novo |
-| `error` | Falha inesperada na Epic | Mostrar o campo `error` e pedir nova tentativa |
+| `pending` | Waiting for the player to authorize | Keep polling `GET /auth/{session_id}` |
+| `completed` | Logged in | Call `/summary` and `/locker` |
+| `expired` | The link expired without authorization (~10 min) | Ask the player to try again |
+| `error` | Unexpected failure at Epic | Show the `error` field and ask for a new attempt |
 
 ## Polling
 
-Consulte `GET /auth/{session_id}` a cada 3 segundos. A API já consulta a Epic a cada 5 segundos, então um intervalo menor não acelera nada.
+Poll `GET /auth/{session_id}` every 3 seconds. The API already checks Epic every 5 seconds, so a shorter interval does not speed anything up.
 
-Pare de consultar quando o status sair de `pending` ou quando passar o tempo de `expires_in` retornado no início.
+Stop polling when the status leaves `pending` or when the `expires_in` time returned at the start has passed.
 
 ```ts
 async function waitForLogin(sessionId: string, expiresIn: number) {
@@ -35,21 +35,21 @@ async function waitForLogin(sessionId: string, expiresIn: number) {
 }
 ```
 
-## Duração da sessão
+## Session lifetime
 
-Depois do login, a sessão fica válida enquanto as duas condições valerem:
+After the login, the session stays valid while both conditions hold:
 
-- Houve alguma chamada com o `session_id` nos últimos **30 minutos**.
-- O token da Epic não expirou. Ele dura cerca de **2 horas**.
+- There was a call with the `session_id` in the last **30 minutes**.
+- The Epic token has not expired. It lasts about **2 hours**.
 
-Durante esse tempo, você pode chamar `/summary` e `/locker` quantas vezes quiser sem pedir login de novo. Depois disso, as chamadas retornam `404` (sessão removida) ou `410` (token expirado).
+During that time you can call `/summary` and `/locker` as many times as you want without a new login. After that, calls return `404` (session removed) or `410` (token expired).
 
 <Tip>
-  Chame `DELETE /auth/{session_id}` assim que terminar de usar os dados. Isso invalida o token na Epic na hora, em vez de esperar a expiração.
+  Call `DELETE /auth/{session_id}` as soon as you are done with the data. It revokes the token at Epic right away instead of waiting for it to expire.
 </Tip>
 
-## Segurança
+## Security
 
-- Os tokens da Epic dão acesso total à conta. Eles **nunca saem da API**: as respostas trazem só o `session_id` e os dados lidos.
-- O `session_id` é aleatório (192 bits). Trate-o como segredo: não mostre em canais públicos.
-- As sessões ficam **em memória**. Se a API reiniciar, todas as sessões somem e os jogadores precisam logar de novo. Por isso, rode só **uma instância e um worker**.
+- The Epic tokens give full access to the account. They **never leave the API**: responses only carry the `session_id` and the data that was read.
+- The `session_id` is random (192 bits). Treat it as a secret: do not show it in public channels.
+- Sessions live **in memory**. If the API restarts, every session is gone and players have to log in again. That is why you should run only **one instance and one worker**.

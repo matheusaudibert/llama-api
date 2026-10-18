@@ -1,0 +1,37 @@
+---
+title: "Local Docker"
+description: "Run the API with Docker on your machine or on any server."
+icon: "docker"
+---
+
+```bash
+docker build -t llama-api .
+docker run -d --name llama-api \
+  -p 8000:8000 \
+  -e API_KEY="paste-the-key-here" \
+  --restart unless-stopped \
+  llama-api
+```
+
+Check that it is up:
+
+```bash
+curl http://localhost:8000/health
+```
+
+## Environment variables
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `API_KEY` | Yes | | Key the bot sends in the `X-API-Key` header |
+| `CATALOG_REFRESH_SECONDS` | No | `21600` | How often the fortnite-api.com catalog is reloaded |
+
+## Update the API docs
+
+`docs/openapi.json` (English) and `docs/pt-BR/openapi.json` (Portuguese) are generated from the code. After changing an endpoint or model, run from the repository root:
+
+```bash
+python scripts/export_openapi.py
+```
+
+The descriptions in the code are in English. The Portuguese version uses the translations in `scripts/openapi_pt.py`, and the script warns when one is missing.

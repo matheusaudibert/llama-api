@@ -14,7 +14,10 @@ from .epic_data import (
     get_account_stats,
     get_banner_ids,
     get_external_auths,
+    get_linkable_platforms,
+    get_purchase_info,
     get_vbucks,
+    get_vbucks_by_platform,
     query_profile,
 )
 from .models import (
@@ -69,22 +72,22 @@ def require_api_key(key: str | None = Security(api_key_header)):
 
 
 app = FastAPI(
-    title="Fortnite Account API",
-    description="Faz login numa conta Epic Games pelo device code flow e lê os dados do Fortnite.",
+    title="Llama API",
+    description="Logs in to an Epic Games account with the device code flow and reads the Fortnite data.",
     version="1.0.0",
     lifespan=lifespan,
 )
 router = APIRouter(
     dependencies=[Depends(require_api_key)],
-    responses={401: {"model": ErrorResponse, "description": "API key ausente ou inválida"}},
+    responses={401: {"model": ErrorResponse, "description": "Missing or invalid API key"}},
 )
 
-NOT_FOUND = {404: {"model": ErrorResponse, "description": "Sessão não encontrada ou já removida"}}
+NOT_FOUND = {404: {"model": ErrorResponse, "description": "Session not found or already removed"}}
 ACCOUNT_ERRORS = {
     **NOT_FOUND,
-    409: {"model": ErrorResponse, "description": "Login não concluído (pending, expired ou error)"},
-    410: {"model": ErrorResponse, "description": "Token da Epic expirou, inicie um novo login"},
-    502: {"model": ErrorResponse, "description": "A Epic Games retornou um erro"},
+    409: {"model": ErrorResponse, "description": "Login not completed (pending, expired or error)"},
+    410: {"model": ErrorResponse, "description": "Epic token expired, start a new login"},
+    502: {"model": ErrorResponse, "description": "Epic Games returned an error"},
 }
 
 
@@ -101,19 +104,19 @@ def logged_session(session_id: str) -> Session:
 
 @app.get("/health", response_model=Health, tags=["Health"], summary="Health check")
 async def health():
-    """Não exige API key. Use no healthcheck da hospedagem."""
+    """Does not require an API key. Use it as your host's healthcheck."""
     return {"status": "ok", "cosmetics_loaded": len(catalog.cosmetics), "active_sessions": len(store.sessions)}
 
 
 @router.post(
     "/auth/device",
     response_model=DeviceLoginResponse,
-    tags=["Autenticação"],
-    summary="Iniciar login",
-    responses={502: {"model": ErrorResponse, "description": "Não foi possível criar o device code na Epic"}},
+    tags=["Authentication"],
+    summary="Start login",
+    responses={502: {"model": ErrorResponse, "description": "Could not create the Epic device code"}},
 )
 async def start_device_login():
-    """Cria um device code na Epic e começa a esperar a autorização em background. Mostre `verification_url` ao jogador."""
+    """Creates an Epic device code and waits for the authorization in the background. Show `verification_url` to the player."""
     try:
         session = await store.start_device_login()
     except Exception as e:
@@ -125,9 +128,9 @@ async def start_device_login():
     }
 
 
-@router.get("/auth/{session_id}", response_model=LoginStatusResponse, tags=["Autenticação"], summary="Status do login", responses=NOT_FOUND)
+@router.get("/auth/{session_id}", response_model=LoginStatusResponse, tags=["Authentication"], summary="Login status", responses=NOT_FOUND)
 async def login_status(session_id: str):
-    """Consulte a cada ~3 s até o status sair de `pending`."""
+    """Poll every ~3 s until the status leaves `pending`."""
     session = store.get(session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -140,9 +143,9 @@ async def login_status(session_id: str):
     return result
 
 
-@router.delete("/auth/{session_id}", status_code=204, tags=["Autenticação"], summary="Encerrar sessão", responses=NOT_FOUND)
+@router.delete("/auth/{session_id}", status_code=204, tags=["Authentication"], summary="End session", responses=NOT_FOUND)
 async def logout(session_id: str):
-    """Invalida o token na Epic e apaga a sessão da memória."""
+    """Revokes the Epic token and deletes the session from memory."""
     if not await store.remove(http, session_id):
         raise HTTPException(status_code=404, detail="Session not found")
     return Response(status_code=204)
@@ -151,12 +154,12 @@ async def logout(session_id: str):
 @router.get(
     "/accounts/{session_id}/summary",
     response_model=AccountSummary,
-    tags=["Conta"],
-    summary="Resumo da conta",
+    tags=["Account"],
+    summary="Account summary",
     responses=ACCOUNT_ERRORS,
 )
 async def account_summary(session: Session = Depends(logged_session)):
-    """Dados da conta Epic, V-Bucks, plataformas conectadas e estatísticas do Battle Royale."""
+    """Epic account data, V-Bucks, connected platforms and Battle Royale stats."""
     user = session.user
     try:
         account, external_auths, common_core, athena = await asyncio.gather(
@@ -180,7 +183,14 @@ async def account_summary(session: Session = Depends(logged_session)):
         "minor_verified": account.get("minorVerified", False),
         "account_created": account.get("created"),
         "profile_created": common_core.get("created"),
+        "last_login": account.get("lastLogin"),
+        "can_change_display_name": account.get("canUpdateDisplayName", False),
+        "display_name_changes": account.get("numberOfDisplayNameChanges", 0),
+        "last_display_name_change": account.get("lastDisplayNameChange"),
         "vbucks": get_vbucks(common_core),
+        "vbucks_by_platform": get_vbucks_by_platform(common_core),
+        **get_purchase_info(common_core),
+        "linkable_platforms": get_linkable_platforms(external_auths),
         "external_auths": [
             {
                 "type": a.get("type"),
@@ -196,12 +206,12 @@ async def account_summary(session: Session = Depends(logged_session)):
 @router.get(
     "/accounts/{session_id}/locker",
     response_model=Locker,
-    tags=["Conta"],
+    tags=["Account"],
     summary="Locker",
     responses=ACCOUNT_ERRORS,
 )
 async def account_locker(session: Session = Depends(logged_session)):
-    """Todos os cosméticos da conta, separados por categoria e ordenados por raridade."""
+    """Every cosmetic on the account, split by category and sorted by rarity."""
     user = session.user
     try:
         athena, common_core = await asyncio.gather(
@@ -221,15 +231,15 @@ async def account_locker(session: Session = Depends(logged_session)):
 @router.post(
     "/render/{category}",
     response_class=Response,
-    tags=["Imagens"],
-    summary="Imagem do locker",
+    tags=["Images"],
+    summary="Locker image",
     responses={
-        200: {"content": {"image/png": {}}, "description": "PNG com os itens da categoria"},
-        422: {"model": ErrorResponse, "description": "Nenhum item da categoria na lista enviada"},
+        200: {"content": {"image/png": {}}, "description": "PNG with the items of the category"},
+        422: {"model": ErrorResponse, "description": "No item of the category in the list"},
     },
 )
 async def render_locker(category: RenderCategory, body: RenderRequest):
-    """Gera um PNG com os itens de uma categoria, no estilo dos checkers. `mythics` junta os itens míticos de todas as categorias. Não exige sessão: envie os itens salvos do `/locker`."""
+    """Renders a PNG with the items of one category, in skin checker style. `mythics` gathers the mythic items of every category. No session needed: send the items saved from `/locker`."""
     owned = {}
     for item in body.items:
         owned.setdefault(item.id.lower(), []).extend(item.owned_styles)

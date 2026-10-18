@@ -1,24 +1,24 @@
 ---
-title: "Erros"
-description: "Códigos HTTP retornados pela API e como tratar cada um no bot."
+title: "Errors"
+description: "HTTP codes returned by the API and how to handle each one in the bot."
 icon: "triangle-exclamation"
 ---
 
-Todo erro tem o mesmo formato:
+Every error has the same shape:
 
 ```json
 { "detail": "Session is pending" }
 ```
 
-| Código | Quando acontece | Como tratar |
+| Code | When it happens | How to handle it |
 |---|---|---|
-| `401` | Header `X-API-Key` ausente ou errado | Confira a variável de ambiente do bot |
-| `404` | `session_id` não existe: nunca existiu, foi encerrado com `DELETE` ou expirou por inatividade | Peça um novo login |
-| `409` | Chamou `/summary` ou `/locker` antes do login terminar | Espere `status: completed` em `GET /auth/{session_id}` |
-| `410` | O token da Epic expirou (~2 h após o login) | Peça um novo login |
-| `422` | Parâmetro inválido | Corrija a chamada |
-| `502` | A Epic Games retornou erro | Tente de novo. Se persistir, a conta pode estar banida ou a Epic pode ter mudado algo |
+| `401` | `X-API-Key` header missing or wrong | Check the bot's environment variable |
+| `404` | The `session_id` does not exist: it never existed, was ended with `DELETE` or expired from inactivity | Ask for a new login |
+| `409` | `/summary` or `/locker` was called before the login finished | Wait for `status: completed` in `GET /auth/{session_id}` |
+| `410` | The Epic token expired (~2 h after the login) | Ask for a new login |
+| `422` | Invalid parameter, or `POST /render/{category}` got no item of the category | Fix the call |
+| `502` | Epic Games returned an error | Try again. If it persists, the account may be banned or Epic may have changed something |
 
 <Note>
-  Um `502` em `POST /auth/device` costuma significar que a Epic recusou o client ID usado no login. Veja os logs da API para o detalhe.
+  A `502` on `POST /auth/device` usually means Epic rejected the client ID used for the login. Check the API logs for details.
 </Note>

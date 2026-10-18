@@ -1,38 +1,43 @@
 ---
-title: "Visão geral"
-description: "URL base, autenticação e convenções da API."
+title: "Overview"
+description: "Base URL, authentication and API conventions."
 icon: "book-open"
 ---
 
-## URL base
+## Base URL
 
-A URL base é o domínio onde você hospedou a API, por exemplo `https://api.seudominio.com`. No playground desta documentação, edite o campo `host` para apontar para a sua instância.
+The base URL is the domain where you host the API, for example `https://api.yourdomain.com`. In this documentation's playground, edit the `host` field to point to your instance.
 
-## Autenticação
+<Info>
+  The API is made to be self-hosted. To use the hosted instance at `https://llama-api.audibert.dev` instead, ask for an API key by [opening an issue on GitHub](https://github.com/matheusaudibert/llama-api/issues/new).
+</Info>
 
-Todos os endpoints, exceto `GET /health`, exigem o header `X-API-Key` com o valor da variável `API_KEY` configurada na API.
+## Authentication
+
+Every endpoint except `GET /health` requires the `X-API-Key` header, set to the `API_KEY` variable configured on the API.
 
 ```bash
-curl https://api.seudominio.com/auth/device \
+curl https://api.yourdomain.com/auth/device \
   -X POST \
-  -H "X-API-Key: sua-chave"
+  -H "X-API-Key: your-key"
 ```
 
-Sem o header, ou com uma chave errada, a resposta é `401`.
+Without the header, or with a wrong key, the response is `401`.
 
 <Warning>
-  A API key dá acesso a iniciar logins e ler contas. Guarde-a só no servidor do bot, nunca no código-fonte ou em clientes.
+  The API key lets anyone start logins and read accounts. Keep it only on your bot's server, never in source code or clients.
 </Warning>
 
-## Fluxo típico
+## Typical flow
 
-1. `POST /auth/device`: inicia o login e devolve o link da Epic.
-2. `GET /auth/{session_id}`: consulta até `completed`.
-3. `GET /accounts/{session_id}/summary` e `GET /accounts/{session_id}/locker`: leem os dados.
-4. `DELETE /auth/{session_id}`: encerra a sessão.
+1. `POST /auth/device`: starts the login and returns the Epic link.
+2. `GET /auth/{session_id}`: poll until `completed`.
+3. `GET /accounts/{session_id}/summary` and `GET /accounts/{session_id}/locker`: read the data.
+4. `POST /render/{category}`: optional, renders the locker images from the saved items.
+5. `DELETE /auth/{session_id}`: ends the session.
 
-Veja o detalhe de cada endpoint no menu lateral e o fluxo completo em [Fluxo de login](/guides/login-flow).
+See each endpoint in the sidebar and the full flow in [Login flow](/guides/login-flow).
 
-## Spec OpenAPI
+## OpenAPI spec
 
-A própria API serve o spec em `/openapi.json` e um Swagger UI em `/docs`. Use o spec para gerar tipos no seu bot.
+The API itself serves the spec at `/openapi.json` and a Swagger UI at `/docs`. Use the spec to generate types for your bot.

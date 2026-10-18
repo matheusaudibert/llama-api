@@ -5,12 +5,12 @@ icon: "docker"
 ---
 
 ```bash
-docker build -t fortnite-account-api .
-docker run -d --name fortnite-account-api \
+docker build -t llama-api .
+docker run -d --name llama-api \
   -p 8000:8000 \
   -e API_KEY="cole-a-chave-aqui" \
   --restart unless-stopped \
-  fortnite-account-api
+  llama-api
 ```
 
 Confira se subiu:
@@ -28,8 +28,10 @@ curl http://localhost:8000/health
 
 ## Atualizar a documentação da API
 
-O arquivo `docs/openapi.json` é gerado a partir do código. Depois de mudar um endpoint ou modelo, rode na raiz do repositório:
+Os arquivos `docs/openapi.json` (inglês) e `docs/pt-BR/openapi.json` (português) são gerados a partir do código. Depois de mudar um endpoint ou modelo, rode na raiz do repositório:
 
 ```bash
 python scripts/export_openapi.py
 ```
+
+As descrições no código ficam em inglês. A versão em português usa as traduções de `scripts/openapi_pt.py`: o script avisa quando falta alguma.

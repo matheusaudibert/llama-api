@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 ASSETS = Path(__file__).parent / "assets"
 FONT_PATH = ASSETS / "font.ttf"
 LOGO_PATH = ASSETS / "epic-games.png"
-ICON_CACHE = Path(tempfile.gettempdir()) / "fortnite-account-api-icons"
+ICON_CACHE = Path(tempfile.gettempdir()) / "llama-api-icons"
 BRASILIA = timezone(timedelta(hours=-3))  # no DST since 2019
 
 CARD = 256

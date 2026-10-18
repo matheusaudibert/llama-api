@@ -1,19 +1,19 @@
 ---
-title: "Exemplo com discord.js"
-description: "Comando /checker completo em TypeScript: login, polling, embed de resumo e encerramento da sessão."
+title: "discord.js example"
+description: "A complete /checker command in TypeScript: login, polling, summary embed and ending the session."
 icon: "discord"
 ---
 
-Este exemplo usa discord.js v14 e o `fetch` nativo do Node 18+. Ele cobre o fluxo inteiro; o visual (embeds e imagem do locker) fica por sua conta.
+This example uses discord.js v14 and the native `fetch` from Node 18+. It covers the whole flow; the visuals (embeds and locker image) are up to you.
 
-## Variáveis de ambiente do bot
+## Bot environment variables
 
 ```bash .env
-ACCOUNT_API_URL=https://api.seudominio.com
-ACCOUNT_API_KEY=a-mesma-chave-configurada-na-api
+ACCOUNT_API_URL=https://api.yourdomain.com
+ACCOUNT_API_KEY=the-same-key-set-on-the-api
 ```
 
-## Cliente da API
+## API client
 
 ```ts accountApi.ts
 const BASE_URL = process.env.ACCOUNT_API_URL!;
@@ -95,10 +95,10 @@ export async function waitForLogin(id: string, expiresIn: number): Promise<Login
 ```
 
 <Tip>
-  Para tipos sempre sincronizados com a API, gere-os a partir do spec: `npx openapi-typescript https://api.seudominio.com/openapi.json -o accountApi.d.ts`.
+  For types that always match the API, generate them from the spec: `npx openapi-typescript https://api.yourdomain.com/openapi.json -o accountApi.d.ts`.
 </Tip>
 
-## Comando /checker
+## /checker command
 
 ```ts checker.ts
 import {
@@ -114,25 +114,25 @@ import { accountApi, waitForLogin } from "./accountApi";
 
 export const data = new SlashCommandBuilder()
   .setName("checker")
-  .setDescription("Mostra as skins da sua conta Fortnite");
+  .setDescription("Shows the skins of your Fortnite account");
 
 export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   const login = await accountApi.startLogin();
   const button = new ButtonBuilder()
-    .setLabel("Entrar com a Epic Games")
+    .setLabel("Log in with Epic Games")
     .setStyle(ButtonStyle.Link)
     .setURL(login.verification_url);
 
   await interaction.editReply({
-    content: "Clique no botão e autorize o acesso à sua conta.",
+    content: "Click the button and authorize access to your account.",
     components: [new ActionRowBuilder<ButtonBuilder>().addComponents(button)],
   });
 
   const result = await waitForLogin(login.session_id, login.expires_in);
   if (result.status !== "completed") {
-    await interaction.editReply({ content: "O login expirou ou falhou. Tente de novo.", components: [] });
+    await interaction.editReply({ content: "The login expired or failed. Try again.", components: [] });
     return;
   }
 
@@ -146,11 +146,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       .setTitle(summary.display_name)
       .addFields(
         { name: "V-Bucks", value: String(summary.vbucks), inline: true },
-        { name: "Nível", value: String(summary.account_level), inline: true },
+        { name: "Level", value: String(summary.account_level), inline: true },
         { name: "Skins", value: String(locker.counts.skins), inline: true },
         {
-          name: "Destaques",
-          value: locker.skins.filter((s) => s.is_mythic).slice(0, 10).map((s) => s.name).join(", ") || "Nenhum",
+          name: "Highlights",
+          value: locker.skins.filter((s) => s.is_mythic).slice(0, 10).map((s) => s.name).join(", ") || "None",
         },
       )
       .setThumbnail(locker.skins[0]?.images.icon ?? null);
@@ -163,5 +163,5 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 ```
 
 <Warning>
-  O polling pode durar até 10 minutos, mas o token de uma interação do Discord vale 15 minutos. Se você precisar de mais tempo, envie uma nova mensagem no canal em vez de editar a resposta.
+  Polling can last up to 10 minutes, but a Discord interaction token is valid for 15 minutes. If you need more time, send a new message in the channel instead of editing the reply.
 </Warning>

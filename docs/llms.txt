@@ -1,0 +1,49 @@
+# Llama API
+
+> Llama API logs in to Epic Games accounts with the device code flow (the player approves on an official Epic page, the API never sees the password) and reads the Fortnite data: account info, V-Bucks, stats, the full locker with rarities and styles, and ready-made PNG images of the locker. It is a REST + JSON API built for Discord skin checker bots and account marketplaces. It is made to be self-hosted (Docker); a hosted instance runs at `https://llama-api.audibert.dev`, with API keys given on request through a GitHub issue at https://github.com/matheusaudibert/llama-api/issues/new.
+
+Important notes:
+
+- Authentication: every endpoint except `GET /health` needs the header `X-API-Key: <key>`, the `API_KEY` environment variable of the instance. Missing or wrong key returns `401`.
+- Base URL: the domain where the instance runs, e.g. `https://api.yourdomain.com`, or `https://llama-api.audibert.dev` for the hosted one.
+- Typical flow: `POST /auth/device` returns `session_id` and `verification_url`; show the URL to the player; poll `GET /auth/{session_id}` every ~3 s until `status` leaves `pending`; on `completed`, call `GET /accounts/{session_id}/summary` and `GET /accounts/{session_id}/locker`; then `DELETE /auth/{session_id}` to revoke the Epic token.
+- Login states: `pending`, `completed`, `expired` (link not approved within ~10 min, `expires_in` seconds), `error` (see the `error` field).
+- Session lifetime: valid while it was used in the last 30 minutes and the Epic token (~2 h) has not expired. After that, calls return `404` (session removed) or `410` (token expired) and the player must log in again.
+- Errors always have the shape `{ "detail": "..." }`. `409` means the login is not `completed` yet; `422` means an invalid parameter, or no item of the category in `POST /render/{category}`; `502` means Epic Games returned an error.
+- Epic tokens never leave the API; clients only see the `session_id`, which must be treated as a secret.
+- Sessions live in memory: run a single instance with a single worker. Restarting the API drops every session. Serverless platforms (Vercel, Netlify) do not work.
+- Locker items have `id`, `name`, `rarity`, `series`, `type`, `images` (`icon`, `small_icon`, `featured` from the fortnite-api.com CDN), `owned_styles`, `is_exclusive`, `is_mythic` and `in_catalog`. Lists are sorted by rarity (Mythic, Legendary, series, Epic, Rare, Uncommon, Common), then by name.
+- Mythic rule: OG items that came back to the shop (Renegade Raider `Mat3`, Aerial Assault Trooper `Stage2`, The Paradigm `Mat3`, Ghoul Trooper `Mat3`, Skull Trooper `Mat1`, Fishstick `Stage3`) are mythic only when the player owns that original style in `owned_styles`; their name becomes `OG ...` and the icon shows the style. Other rare items (Black Knight, Travis Scott, Floss...) are mythic only if they were not sold in the item shop in the last 2 years.
+- Items released after the last catalog refresh are fetched on demand; if fortnite-api.com does not know an item yet, it comes with `in_catalog: false`, `name` equal to `id` and `rarity: "Common"`.
+- `POST /render/{category}` does not need a session: send `{"display_name": "...", "items": [{"id": "...", "owned_styles": [...]}]}`, usually the items saved from `/locker` as they are (extra fields are ignored). Categories: `skins`, `backpacks`, `pickaxes`, `gliders`, `emotes` and `mythics` (mythic items of every category). Returns `image/png`, at most 2048 px wide. Without `owned_styles`, OGs are not recognized.
+- The summary has `email` unmasked: mask it before showing it in public channels.
+
+## API reference
+
+- [Overview](/api-reference/introduction): Base URL, `X-API-Key` authentication, typical flow and the OpenAPI spec (served by every instance at `/openapi.json`, Swagger UI at `/docs`).
+- [POST /auth/device](/api-reference/endpoints/authentication/start-login): Starts a login. Returns `session_id`, `verification_url` (Epic page the player opens) and `expires_in` (seconds). `502` when Epic refuses to create the device code.
+- [GET /auth/{session_id}](/api-reference/endpoints/authentication/login-status): Login status (`pending`, `completed`, `expired`, `error`). On `completed` also returns `account_id` and `display_name`. Poll every ~3 s.
+- [DELETE /auth/{session_id}](/api-reference/endpoints/authentication/end-session): Revokes the Epic token and deletes the session. Returns `204`.
+- [GET /accounts/{session_id}/summary](/api-reference/endpoints/account/account-summary): Account data: `email`, `email_verified`, `name`, `last_name`, `country`, `tfa_enabled`, `minor_verified`, `last_login`, display name changes (`can_change_display_name`, `display_name_changes`, `last_display_name_change`), `vbucks` and `vbucks_by_platform`, `mtx_platform`, `refund_credits`, `refunds_used`, `external_auths` (linked platforms), `linkable_platforms` (consoles not linked yet), `account_level`, `lifetime_wins`, `total_wins`, `total_matches`, `last_match_end`, `current_season` and `past_seasons` (season, level, battle pass, wins).
+- [GET /accounts/{session_id}/locker](/api-reference/endpoints/account/locker): Every cosmetic, split into `skins`, `backpacks`, `pickaxes`, `emotes`, `gliders`, `wraps`, `sprays`, `others` and `banners`, plus `counts` per category.
+- [POST /render/{category}](/api-reference/endpoints/images/locker-image): PNG image of one locker category, in skin checker style: header with category, count, Epic Games logo, nickname and date, and one card per item with the rarity background and name. No session needed.
+- [GET /health](/api-reference/endpoints/health/health-check): Healthcheck without API key. Returns `status`, `cosmetics_loaded` and `active_sessions`.
+
+## Guides
+
+- [Introduction](/guides/introduction): What the API does, the login sequence and the self-hosted vs hosted options.
+- [Quickstart](/quickstart): Run the API locally with Python or Docker, generate an API key and do the first login with curl.
+- [Login flow](/guides/login-flow): Session states, polling, session lifetime and security of tokens and `session_id`.
+- [Locker and cosmetics](/guides/locker): Categories, item format, rarity and sorting, mythic and OG rules, the render route and how new items are handled.
+- [Errors](/guides/errors): Every HTTP status the API returns and how a bot should handle it.
+- [discord.js example](/guides/discord-bot): A complete `/checker` slash command in TypeScript: typed API client, login button, polling, summary embed and logout.
+
+## Self-hosting
+
+- [Production deploy](/self-hosting/production): Deploy the Docker image on any server or platform (VPS, Railway, Fly.io, Coolify, Dokploy, CapRover). Environment variables `API_KEY` (required) and `CATALOG_REFRESH_SECONDS` (default `21600`), HTTPS with a reverse proxy, the `/health` healthcheck, updates and why it must run as a single replica.
+- [Local Docker](/self-hosting/local): Build and run the image locally and regenerate the OpenAPI specs with `python scripts/export_openapi.py`.
+
+## Optional
+
+- [Documentação em português](/pt-BR/guides/introduction): The same docs in Brazilian Portuguese.
+- [Source code](https://github.com/matheusaudibert/llama-api): Repository, issues and API key requests for the hosted instance.

@@ -1,0 +1,167 @@
+---
+title: "Exemplo com discord.js"
+description: "Comando /checker completo em TypeScript: login, polling, embed de resumo e encerramento da sessão."
+icon: "discord"
+---
+
+Este exemplo usa discord.js v14 e o `fetch` nativo do Node 18+. Ele cobre o fluxo inteiro; o visual (embeds e imagem do locker) fica por sua conta.
+
+## Variáveis de ambiente do bot
+
+```bash .env
+ACCOUNT_API_URL=https://api.seudominio.com
+ACCOUNT_API_KEY=a-mesma-chave-configurada-na-api
+```
+
+## Cliente da API
+
+```ts accountApi.ts
+const BASE_URL = process.env.ACCOUNT_API_URL!;
+const API_KEY = process.env.ACCOUNT_API_KEY!;
+
+export class AccountApiError extends Error {
+  constructor(public status: number, message: string) {
+    super(message);
+  }
+}
+
+async function api<T>(path: string, method = "GET"): Promise<T> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method,
+    headers: { "X-API-Key": API_KEY },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new AccountApiError(res.status, body.detail);
+  }
+  return (res.status === 204 ? undefined : await res.json()) as T;
+}
+
+export type LoginStatus = {
+  status: "pending" | "completed" | "expired" | "error";
+  account_id?: string;
+  display_name?: string;
+  error?: string;
+};
+
+export type Cosmetic = {
+  id: string;
+  name: string;
+  rarity: string;
+  series: string | null;
+  type: string | null;
+  images: { icon: string | null; small_icon: string | null; featured: string | null };
+  owned_styles: string[];
+  is_exclusive: boolean;
+  is_mythic: boolean;
+  in_catalog: boolean;
+};
+
+const CATEGORIES = ["skins", "backpacks", "pickaxes", "emotes", "gliders", "wraps", "sprays", "others", "banners"] as const;
+type Category = (typeof CATEGORIES)[number];
+
+export type Locker = { counts: Record<Category, number> } & Record<Category, Cosmetic[]>;
+
+export type AccountSummary = {
+  account_id: string;
+  display_name: string;
+  email: string | null;
+  country: string | null;
+  tfa_enabled: boolean;
+  vbucks: number;
+  account_level: number;
+  total_wins: number;
+  external_auths: { type: string | null; display_name: string | null; date_added: string | null }[];
+};
+
+export const accountApi = {
+  startLogin: () =>
+    api<{ session_id: string; verification_url: string; expires_in: number }>("/auth/device", "POST"),
+  status: (id: string) => api<LoginStatus>(`/auth/${id}`),
+  summary: (id: string) => api<AccountSummary>(`/accounts/${id}/summary`),
+  locker: (id: string) => api<Locker>(`/accounts/${id}/locker`),
+  logout: (id: string) => api<void>(`/auth/${id}`, "DELETE"),
+};
+
+export async function waitForLogin(id: string, expiresIn: number): Promise<LoginStatus> {
+  const deadline = Date.now() + expiresIn * 1000;
+  while (Date.now() < deadline) {
+    const status = await accountApi.status(id);
+    if (status.status !== "pending") return status;
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+  return { status: "expired" };
+}
+```
+
+<Tip>
+  Para tipos sempre sincronizados com a API, gere-os a partir do spec: `npx openapi-typescript https://api.seudominio.com/openapi.json -o accountApi.d.ts`.
+</Tip>
+
+## Comando /checker
+
+```ts checker.ts
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+  MessageFlags,
+  SlashCommandBuilder,
+} from "discord.js";
+import { accountApi, waitForLogin } from "./accountApi";
+
+export const data = new SlashCommandBuilder()
+  .setName("checker")
+  .setDescription("Mostra as skins da sua conta Fortnite");
+
+export async function execute(interaction: ChatInputCommandInteraction) {
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+  const login = await accountApi.startLogin();
+  const button = new ButtonBuilder()
+    .setLabel("Entrar com a Epic Games")
+    .setStyle(ButtonStyle.Link)
+    .setURL(login.verification_url);
+
+  await interaction.editReply({
+    content: "Clique no botão e autorize o acesso à sua conta.",
+    components: [new ActionRowBuilder<ButtonBuilder>().addComponents(button)],
+  });
+
+  const result = await waitForLogin(login.session_id, login.expires_in);
+  if (result.status !== "completed") {
+    await interaction.editReply({ content: "O login expirou ou falhou. Tente de novo.", components: [] });
+    return;
+  }
+
+  try {
+    const [summary, locker] = await Promise.all([
+      accountApi.summary(login.session_id),
+      accountApi.locker(login.session_id),
+    ]);
+
+    const embed = new EmbedBuilder()
+      .setTitle(summary.display_name)
+      .addFields(
+        { name: "V-Bucks", value: String(summary.vbucks), inline: true },
+        { name: "Nível", value: String(summary.account_level), inline: true },
+        { name: "Skins", value: String(locker.counts.skins), inline: true },
+        {
+          name: "Destaques",
+          value: locker.skins.filter((s) => s.is_mythic).slice(0, 10).map((s) => s.name).join(", ") || "Nenhum",
+        },
+      )
+      .setThumbnail(locker.skins[0]?.images.icon ?? null);
+
+    await interaction.editReply({ content: "", embeds: [embed], components: [] });
+  } finally {
+    await accountApi.logout(login.session_id).catch(() => {});
+  }
+}
+```
+
+<Warning>
+  O polling pode durar até 10 minutos, mas o token de uma interação do Discord vale 15 minutos. Se você precisar de mais tempo, envie uma nova mensagem no canal em vez de editar a resposta.
+</Warning>
