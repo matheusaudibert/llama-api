@@ -1,0 +1,1108 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Fortnite Account API",
+    "description": "Faz login numa conta Epic Games pelo device code flow e lê os dados do Fortnite.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health check",
+        "description": "Não exige API key. Use no healthcheck da hospedagem.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/device": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Iniciar login",
+        "description": "Cria um device code na Epic e começa a esperar a autorização em background. Mostre `verification_url` ao jogador.",
+        "operationId": "start_device_login_auth_device_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceLoginResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key ausente ou inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Não foi possível criar o device code na Epic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/auth/{session_id}": {
+      "get": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Status do login",
+        "description": "Consulte a cada ~3 s até o status sair de `pending`.",
+        "operationId": "login_status_auth__session_id__get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginStatusResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key ausente ou inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sessão não encontrada ou já removida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Autenticação"
+        ],
+        "summary": "Encerrar sessão",
+        "description": "Invalida o token na Epic e apaga a sessão da memória.",
+        "operationId": "logout_auth__session_id__delete",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "API key ausente ou inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sessão não encontrada ou já removida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/{session_id}/summary": {
+      "get": {
+        "tags": [
+          "Conta"
+        ],
+        "summary": "Resumo da conta",
+        "description": "Dados da conta Epic, V-Bucks, plataformas conectadas e estatísticas do Battle Royale.",
+        "operationId": "account_summary_accounts__session_id__summary_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountSummary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key ausente ou inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sessão não encontrada ou já removida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Login não concluído (pending, expired ou error)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Token da Epic expirou, inicie um novo login",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "A Epic Games retornou um erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/{session_id}/locker": {
+      "get": {
+        "tags": [
+          "Conta"
+        ],
+        "summary": "Locker",
+        "description": "Todos os cosméticos da conta, separados por categoria e ordenados por raridade.",
+        "operationId": "account_locker_accounts__session_id__locker_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Locker"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key ausente ou inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sessão não encontrada ou já removida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Login não concluído (pending, expired ou error)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Token da Epic expirou, inicie um novo login",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "A Epic Games retornou um erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccountSummary": {
+        "properties": {
+          "account_id": {
+            "type": "string",
+            "title": "Account Id"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email",
+            "description": "Email sem máscara. Mascare antes de exibir em canais públicos."
+          },
+          "email_verified": {
+            "type": "boolean",
+            "title": "Email Verified"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country",
+            "description": "Código do país (ISO 3166-1 alpha-2)."
+          },
+          "tfa_enabled": {
+            "type": "boolean",
+            "title": "Tfa Enabled",
+            "description": "Se a autenticação de dois fatores está ativa."
+          },
+          "minor_verified": {
+            "type": "boolean",
+            "title": "Minor Verified",
+            "description": "Se a conta tem controle parental / verificação de menor."
+          },
+          "account_created": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account Created",
+            "description": "Criação da conta Epic (ISO 8601)."
+          },
+          "profile_created": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Created",
+            "description": "Criação do perfil no Fortnite (ISO 8601)."
+          },
+          "vbucks": {
+            "type": "integer",
+            "title": "Vbucks",
+            "description": "Total de V-Bucks somando todas as fontes."
+          },
+          "external_auths": {
+            "items": {
+              "$ref": "#/components/schemas/ExternalAuth"
+            },
+            "type": "array",
+            "title": "External Auths",
+            "description": "Plataformas conectadas à conta."
+          },
+          "account_level": {
+            "type": "integer",
+            "title": "Account Level"
+          },
+          "total_wins": {
+            "type": "integer",
+            "title": "Total Wins",
+            "description": "Soma das vitórias de todas as temporadas passadas."
+          },
+          "total_matches": {
+            "type": "integer",
+            "title": "Total Matches",
+            "description": "Soma das partidas de todas as temporadas passadas."
+          },
+          "last_match_end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Match End",
+            "description": "Fim da última partida jogada (ISO 8601)."
+          },
+          "past_seasons": {
+            "items": {
+              "$ref": "#/components/schemas/PastSeason"
+            },
+            "type": "array",
+            "title": "Past Seasons"
+          }
+        },
+        "type": "object",
+        "required": [
+          "account_id",
+          "display_name",
+          "email_verified",
+          "tfa_enabled",
+          "minor_verified",
+          "vbucks",
+          "external_auths",
+          "account_level",
+          "total_wins",
+          "total_matches",
+          "past_seasons"
+        ],
+        "title": "AccountSummary"
+      },
+      "Cosmetic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "ID do cosmético em minúsculas, ex: cid_028_athena_commando_f."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Nome do item. Igual ao `id` quando o item não está no catálogo."
+          },
+          "rarity": {
+            "type": "string",
+            "title": "Rarity",
+            "description": "Common, Uncommon, Rare, Epic, Legendary, Mythic ou uma série, como Icon Series."
+          },
+          "series": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Series",
+            "description": "Série do item, quando houver."
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type",
+            "description": "Tipo no fortnite-api, ex: outfit, backpack, pickaxe, emote, glider."
+          },
+          "images": {
+            "$ref": "#/components/schemas/CosmeticImages"
+          },
+          "owned_styles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Owned Styles",
+            "description": "Tags dos estilos que o jogador desbloqueou."
+          },
+          "is_exclusive": {
+            "type": "boolean",
+            "title": "Is Exclusive",
+            "description": "Faz parte da lista de itens exclusivos (Renegade Raider, Ghoul Trooper…)."
+          },
+          "is_mythic": {
+            "type": "boolean",
+            "title": "Is Mythic",
+            "description": "Considerado OG/raro pelo checker, independente da raridade no jogo."
+          },
+          "in_catalog": {
+            "type": "boolean",
+            "title": "In Catalog",
+            "description": "False quando o fortnite-api ainda não tem dados deste item."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "rarity",
+          "images",
+          "owned_styles",
+          "is_exclusive",
+          "is_mythic",
+          "in_catalog"
+        ],
+        "title": "Cosmetic"
+      },
+      "CosmeticImages": {
+        "properties": {
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          },
+          "small_icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Small Icon"
+          },
+          "featured": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Featured"
+          }
+        },
+        "type": "object",
+        "title": "CosmeticImages"
+      },
+      "DeviceLoginResponse": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "title": "Session Id",
+            "description": "ID opaco usado em todas as outras chamadas deste login."
+          },
+          "verification_url": {
+            "type": "string",
+            "title": "Verification Url",
+            "description": "Página da Epic Games onde o jogador autoriza o login."
+          },
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In",
+            "description": "Segundos até o link de verificação expirar."
+          }
+        },
+        "type": "object",
+        "required": [
+          "session_id",
+          "verification_url",
+          "expires_in"
+        ],
+        "title": "DeviceLoginResponse"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "ErrorResponse"
+      },
+      "ExternalAuth": {
+        "properties": {
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type",
+            "description": "Plataforma, ex: psn, xbl, nintendo, github, steam."
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name",
+            "description": "Nome do jogador na plataforma."
+          },
+          "date_added": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Added",
+            "description": "Data em que a plataforma foi conectada (ISO 8601)."
+          }
+        },
+        "type": "object",
+        "title": "ExternalAuth"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Health": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          },
+          "cosmetics_loaded": {
+            "type": "integer",
+            "title": "Cosmetics Loaded",
+            "description": "Cosméticos no catálogo em memória."
+          },
+          "active_sessions": {
+            "type": "integer",
+            "title": "Active Sessions",
+            "description": "Sessões de login em memória."
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "cosmetics_loaded",
+          "active_sessions"
+        ],
+        "title": "Health"
+      },
+      "Locker": {
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/LockerCounts",
+            "description": "Quantidade de itens por categoria."
+          },
+          "skins": {
+            "items": {
+              "$ref": "#/components/schemas/Cosmetic"
+            },
+            "type": "array",
+            "title": "Skins"
+          },
+          "backpacks": {
+            "items": {
+              "$ref": "#/components/schemas/Cosmetic"
+            },
+            "type": "array",
+            "title": "Backpacks"
+          },
+          "pickaxes": {
+            "items": {
+              "$ref": "#/components/schemas/Cosmetic"
+            },
+            "type": "array",
+            "title": "Pickaxes"
+          },
+          "emotes": {
+            "items": {
+              "$ref": "#/components/schemas/Cosmetic"
+            },
+            "type": "array",
+            "title": "Emotes"
+          },
+          "gliders": {
+            "items": {
+              "$ref": "#/components/schemas/Cosmetic"
+            },
+            "type": "array",
+            "title": "Gliders"
+          },
+          "wraps": {
+            "items": {
+              "$ref": "#/components/schemas/Cosmetic"
+            },
+            "type": "array",
+            "title": "Wraps"
+          },
+          "sprays": {
+            "items": {
+              "$ref": "#/components/schemas/Cosmetic"
+            },
+            "type": "array",
+            "title": "Sprays"
+          },
+          "others": {
+            "items": {
+              "$ref": "#/components/schemas/Cosmetic"
+            },
+            "type": "array",
+            "title": "Others"
+          },
+          "banners": {
+            "items": {
+              "$ref": "#/components/schemas/Cosmetic"
+            },
+            "type": "array",
+            "title": "Banners"
+          }
+        },
+        "type": "object",
+        "required": [
+          "counts",
+          "skins",
+          "backpacks",
+          "pickaxes",
+          "emotes",
+          "gliders",
+          "wraps",
+          "sprays",
+          "others",
+          "banners"
+        ],
+        "title": "Locker"
+      },
+      "LockerCounts": {
+        "properties": {
+          "skins": {
+            "type": "integer",
+            "title": "Skins"
+          },
+          "backpacks": {
+            "type": "integer",
+            "title": "Backpacks"
+          },
+          "pickaxes": {
+            "type": "integer",
+            "title": "Pickaxes"
+          },
+          "emotes": {
+            "type": "integer",
+            "title": "Emotes"
+          },
+          "gliders": {
+            "type": "integer",
+            "title": "Gliders"
+          },
+          "wraps": {
+            "type": "integer",
+            "title": "Wraps"
+          },
+          "sprays": {
+            "type": "integer",
+            "title": "Sprays"
+          },
+          "others": {
+            "type": "integer",
+            "title": "Others"
+          },
+          "banners": {
+            "type": "integer",
+            "title": "Banners"
+          }
+        },
+        "type": "object",
+        "required": [
+          "skins",
+          "backpacks",
+          "pickaxes",
+          "emotes",
+          "gliders",
+          "wraps",
+          "sprays",
+          "others",
+          "banners"
+        ],
+        "title": "LockerCounts"
+      },
+      "LoginStatusResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "completed",
+              "expired",
+              "error"
+            ],
+            "title": "Status",
+            "description": "Estado atual do login."
+          },
+          "account_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account Id",
+            "description": "ID da conta Epic. Presente quando `completed`."
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name",
+            "description": "Nome de exibição da conta. Presente quando `completed`."
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error",
+            "description": "Mensagem de erro quando `error`."
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "LoginStatusResponse"
+      },
+      "PastSeason": {
+        "properties": {
+          "season": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Season",
+            "description": "Número da temporada."
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level",
+            "description": "Nível alcançado na temporada."
+          },
+          "battle_pass_purchased": {
+            "type": "boolean",
+            "title": "Battle Pass Purchased",
+            "description": "Se o passe de batalha foi comprado.",
+            "default": false
+          },
+          "wins": {
+            "type": "integer",
+            "title": "Wins",
+            "description": "Vitórias na temporada.",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "PastSeason"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "APIKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://{host}",
+      "description": "Sua instância",
+      "variables": {
+        "host": {
+          "default": "api.seudominio.com",
+          "description": "Domínio onde a API está hospedada"
+        }
+      }
+    },
+    {
+      "url": "http://localhost:8000",
+      "description": "Local"
+    }
+  ],
+  "security": [
+    {
+      "APIKeyHeader": []
+    }
+  ]
+}

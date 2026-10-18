@@ -1,0 +1,62 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Fortnite Account API",
+  "colors": {
+    "primary": "#7C3AED",
+    "light": "#A78BFA",
+    "dark": "#6D28D9"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guias",
+        "groups": [
+          {
+            "group": "Começando",
+            "pages": ["index", "quickstart"]
+          },
+          {
+            "group": "Conceitos",
+            "pages": ["guides/login-flow", "guides/locker", "guides/errors"]
+          },
+          {
+            "group": "Integração",
+            "pages": ["guides/discord-bot"]
+          },
+          {
+            "group": "Deploy",
+            "pages": ["deploy/coolify", "deploy/local"]
+          }
+        ]
+      },
+      {
+        "tab": "Referência da API",
+        "groups": [
+          {
+            "group": "Visão geral",
+            "pages": ["api-reference/introduction"]
+          },
+          {
+            "group": "Endpoints",
+            "openapi": "openapi.json",
+            "pages": [
+              "POST /auth/device",
+              "GET /auth/{session_id}",
+              "DELETE /auth/{session_id}",
+              "GET /accounts/{session_id}/summary",
+              "GET /accounts/{session_id}/locker",
+              "GET /health"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "api": {
+    "playground": {
+      "display": "interactive"
+    }
+  }
+}

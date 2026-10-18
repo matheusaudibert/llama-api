@@ -1,0 +1,83 @@
+---
+title: "Deploy no Coolify"
+description: "Coloque a API no ar numa VPS da Hostinger usando o Coolify e o Dockerfile do repositório."
+icon: "server"
+---
+
+O repositório já tem um `Dockerfile` pronto. O Coolify constrói a imagem direto do GitHub e refaz o deploy a cada push.
+
+## Pré-requisitos
+
+- Uma VPS da Hostinger com o Coolify instalado (a Hostinger oferece o template "Coolify" na criação da VPS)
+- Este repositório no seu GitHub
+- Um domínio ou subdomínio apontando para o IP da VPS, por exemplo `api.seudominio.com` (registro `A`)
+
+<Steps>
+  <Step title="Conecte o GitHub ao Coolify">
+    No painel do Coolify, vá em **Sources** e adicione um **GitHub App**. Dê acesso ao repositório `fortnite-account-api`.
+
+    Se o repositório for público, você pode pular este passo e usar **Public Repository** no próximo.
+  </Step>
+  <Step title="Crie o recurso">
+    Em **Projects**, abra (ou crie) um projeto e clique em **New → Resource → Private Repository (with GitHub App)**. Escolha o repositório e a branch `main`.
+
+    Em **Build Pack**, escolha **Dockerfile**. Deixe **Base Directory** como `/` e **Dockerfile Location** como `/Dockerfile`.
+  </Step>
+  <Step title="Configure a porta e o domínio">
+    Em **General**:
+
+    - **Ports Exposes**: `8000`
+    - **Domains**: `https://api.seudominio.com`
+
+    O Coolify gera o certificado HTTPS automaticamente com Let's Encrypt.
+  </Step>
+  <Step title="Defina as variáveis de ambiente">
+    Em **Environment Variables**, adicione:
+
+    | Variável | Valor |
+    |---|---|
+    | `API_KEY` | Uma chave aleatória longa. Gere com `python -c "import secrets; print(secrets.token_urlsafe(32))"` |
+    | `CATALOG_REFRESH_SECONDS` | Opcional. Padrão `21600` (6 h) |
+
+    <Warning>
+      Sem `API_KEY` a API não inicia. Use a mesma chave no `.env` do seu bot.
+    </Warning>
+  </Step>
+  <Step title="Configure o healthcheck">
+    Em **Healthcheck**, ative e use:
+
+    - **Path**: `/health`
+    - **Port**: `8000`
+
+    O endpoint `/health` não exige API key. O `Dockerfile` também declara um `HEALTHCHECK` com `curl`, que o Coolify reconhece.
+  </Step>
+  <Step title="Faça o deploy">
+    Clique em **Deploy**. O primeiro build leva 1 a 2 minutos. Nos logs, espere:
+
+    ```text
+    Catalog loaded: 16599 cosmetics, 1018 banners
+    Application startup complete.
+    ```
+  </Step>
+  <Step title="Teste">
+    ```bash
+    curl https://api.seudominio.com/health
+    ```
+
+    ```json Resposta
+    { "status": "ok", "cosmetics_loaded": 16599, "active_sessions": 0 }
+    ```
+  </Step>
+</Steps>
+
+## Deploy automático
+
+Com o GitHub App conectado, cada push na `main` dispara um novo deploy. Como as sessões ficam em memória, **um deploy desconecta quem estiver logado naquele momento**. Prefira fazer deploy quando o bot estiver com pouco uso.
+
+## Não escale horizontalmente
+
+Mantenha **uma réplica** e **um worker**. Com duas instâncias, um login criado numa não existe na outra e o bot recebe `404` aleatoriamente. O `CMD` do Dockerfile já roda o uvicorn com um único worker.
+
+## Recursos
+
+A API usa pouca memória: cerca de 120 MB com o catálogo carregado. O plano KVM 1 da Hostinger é suficiente para ela junto com o seu bot.

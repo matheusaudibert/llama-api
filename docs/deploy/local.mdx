@@ -1,0 +1,35 @@
+---
+title: "Docker local"
+description: "Rode a API com Docker na sua máquina ou em qualquer servidor."
+icon: "docker"
+---
+
+```bash
+docker build -t fortnite-account-api .
+docker run -d --name fortnite-account-api \
+  -p 8000:8000 \
+  -e API_KEY="cole-a-chave-aqui" \
+  --restart unless-stopped \
+  fortnite-account-api
+```
+
+Confira se subiu:
+
+```bash
+curl http://localhost:8000/health
+```
+
+## Variáveis de ambiente
+
+| Variável | Obrigatória | Padrão | Descrição |
+|---|---|---|---|
+| `API_KEY` | Sim | | Chave que o bot envia no header `X-API-Key` |
+| `CATALOG_REFRESH_SECONDS` | Não | `21600` | Intervalo de recarga do catálogo do fortnite-api.com |
+
+## Atualizar a documentação da API
+
+O arquivo `docs/openapi.json` é gerado a partir do código. Depois de mudar um endpoint ou modelo, rode na raiz do repositório:
+
+```bash
+python scripts/export_openapi.py
+```

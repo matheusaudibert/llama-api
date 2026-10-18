@@ -1,0 +1,24 @@
+---
+title: "Erros"
+description: "Códigos HTTP retornados pela API e como tratar cada um no bot."
+icon: "triangle-exclamation"
+---
+
+Todo erro tem o mesmo formato:
+
+```json
+{ "detail": "Session is pending" }
+```
+
+| Código | Quando acontece | Como tratar |
+|---|---|---|
+| `401` | Header `X-API-Key` ausente ou errado | Confira a variável de ambiente do bot |
+| `404` | `session_id` não existe: nunca existiu, foi encerrado com `DELETE` ou expirou por inatividade | Peça um novo login |
+| `409` | Chamou `/summary` ou `/locker` antes do login terminar | Espere `status: completed` em `GET /auth/{session_id}` |
+| `410` | O token da Epic expirou (~2 h após o login) | Peça um novo login |
+| `422` | Parâmetro inválido | Corrija a chamada |
+| `502` | A Epic Games retornou erro | Tente de novo. Se persistir, a conta pode estar banida ou a Epic pode ter mudado algo |
+
+<Note>
+  Um `502` em `POST /auth/device` costuma significar que a Epic recusou o client ID usado no login. Veja os logs da API para o detalhe.
+</Note>

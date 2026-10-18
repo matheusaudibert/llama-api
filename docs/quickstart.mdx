@@ -1,0 +1,85 @@
+---
+title: "Início rápido"
+description: "Rode a API localmente e faça o primeiro login numa conta Epic Games."
+icon: "rocket"
+---
+
+## Pré-requisitos
+
+- Python 3.12 ou mais novo, ou Docker
+- Uma conta Epic Games para testar
+
+<Steps>
+  <Step title="Clone o repositório e instale as dependências">
+    ```bash
+    git clone https://github.com/matheusaudibert/fortnite-account-api.git
+    cd fortnite-account-api
+    python -m venv .venv
+    source .venv/bin/activate  # Windows: .venv\Scripts\activate
+    pip install -r requirements.txt
+    ```
+  </Step>
+  <Step title="Defina a API key">
+    A API não inicia sem `API_KEY`. Gere uma chave aleatória:
+
+    ```bash
+    python -c "import secrets; print(secrets.token_urlsafe(32))"
+    ```
+
+    Exporte a chave gerada:
+
+    ```bash
+    export API_KEY="cole-a-chave-aqui"  # Windows PowerShell: $env:API_KEY="cole-a-chave-aqui"
+    ```
+  </Step>
+  <Step title="Inicie o servidor">
+    ```bash
+    uvicorn api.main:app --port 8000
+    ```
+
+    Espere a linha `Catalog loaded: ... cosmetics` no log. A documentação interativa do FastAPI fica em `http://localhost:8000/docs`.
+  </Step>
+  <Step title="Inicie um login">
+    ```bash
+    curl -X POST http://localhost:8000/auth/device -H "X-API-Key: $API_KEY"
+    ```
+
+    ```json Resposta
+    {
+      "session_id": "8M4-85Ra3sMk5gmMyvm__k_54_fGdHyo",
+      "verification_url": "https://www.epicgames.com/activate?userCode=RSHBCWPX",
+      "expires_in": 600
+    }
+    ```
+
+    Abra `verification_url` no navegador e autorize com a conta Epic.
+  </Step>
+  <Step title="Confira o status">
+    ```bash
+    curl http://localhost:8000/auth/SEU_SESSION_ID -H "X-API-Key: $API_KEY"
+    ```
+
+    Quando `status` for `completed`, a conta está logada.
+  </Step>
+  <Step title="Leia o locker">
+    ```bash
+    curl http://localhost:8000/accounts/SEU_SESSION_ID/locker -H "X-API-Key: $API_KEY"
+    ```
+  </Step>
+  <Step title="Encerre a sessão">
+    ```bash
+    curl -X DELETE http://localhost:8000/auth/SEU_SESSION_ID -H "X-API-Key: $API_KEY"
+    ```
+  </Step>
+</Steps>
+
+## Próximos passos
+
+<Columns cols={2}>
+  <Card title="Fluxo de login" icon="key" href="/guides/login-flow">
+    Estados da sessão, tempos de expiração e boas práticas de polling.
+  </Card>
+  <Card title="Exemplo com discord.js" icon="discord" href="/guides/discord-bot">
+    Integre a API no seu bot.
+  </Card>
+</Columns>

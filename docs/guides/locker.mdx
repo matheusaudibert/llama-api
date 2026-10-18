@@ -1,0 +1,71 @@
+---
+title: "Locker e cosméticos"
+description: "Formato dos itens do locker, ordenação, raridades e como usar as imagens."
+icon: "shirt"
+---
+
+`GET /accounts/{session_id}/locker` devolve todos os cosméticos da conta, separados por categoria.
+
+## Categorias
+
+| Campo | Conteúdo |
+|---|---|
+| `skins` | Trajes (`cid_*`, `character_*`) |
+| `backpacks` | Mochilas (`bid_*`) |
+| `pickaxes` | Picaretas (`pickaxe_*`) |
+| `emotes` | Emotes (`eid_*`) |
+| `gliders` | Asas-deltas e guarda-chuvas |
+| `wraps` | Envelopamentos |
+| `sprays` | Sprays |
+| `others` | Tudo que não se encaixa acima (músicas, telas de carregamento, etc.) |
+| `banners` | Banners do perfil |
+
+`counts` traz a quantidade de itens por categoria, útil para embeds de resumo.
+
+## Formato de um item
+
+```json
+{
+  "id": "cid_028_athena_commando_f",
+  "name": "Renegade Raider",
+  "rarity": "Mythic",
+  "series": null,
+  "type": "outfit",
+  "images": {
+    "icon": "https://fortnite-api.com/images/cosmetics/br/cid_028_athena_commando_f/icon.png",
+    "small_icon": "https://fortnite-api.com/images/cosmetics/br/cid_028_athena_commando_f/smallicon.png",
+    "featured": "https://fortnite-api.com/images/cosmetics/br/cid_028_athena_commando_f/featured.png"
+  },
+  "owned_styles": ["Mat1", "Mat2"],
+  "is_exclusive": true,
+  "is_mythic": true,
+  "in_catalog": true
+}
+```
+
+## Raridade e ordenação
+
+`rarity` vem do fortnite-api (`Common`, `Uncommon`, `Rare`, `Epic`, `Legendary` ou uma série, como `Icon Series`, `MARVEL SERIES` e `DC SERIES`). Itens OG/raros reconhecidos pelo checker viram `Mythic`, independente da raridade no jogo, e têm `is_mythic: true`.
+
+Cada lista já vem ordenada:
+
+1. Por raridade: Mythic, Legendary, séries (Dark, Slurp, Star Wars, Marvel, Lava, Frozen, Gaming Legends, Shadow, Icon, DC), Epic, Rare, Uncommon, Common.
+2. Entre os míticos, pela ordem dos itens mais raros (Renegade Raider, Ghoul Trooper…).
+3. Por nome.
+
+`is_exclusive` marca um grupo pequeno de itens muito raros (Renegade Raider, Aerial Assault Trooper, Ghoul Trooper, Skull Trooper, Omega, Fishstick e The Paradigm), útil para um destaque especial.
+
+## Imagens
+
+As URLs em `images` apontam direto para o CDN do fortnite-api.com. Para montar uma imagem de locker, baixe `icon` (ou `small_icon`, menor e mais rápido) e desenhe com a biblioteca que preferir, como `@napi-rs/canvas` ou `sharp`.
+
+<Tip>
+  Guarde as imagens baixadas em cache local pelo `id`. Mas só faça cache quando a resposta for `200`: itens recém-lançados podem ainda não ter imagem.
+</Tip>
+
+## Itens novos
+
+Quando a Epic lança uma skin, ela aparece no locker assim que o jogador a tiver, porque a lista vem direto do perfil da conta. Nome, raridade e imagem dependem do fortnite-api.com:
+
+- Se o item ainda não estiver no catálogo em memória, a API busca só aquele item na hora.
+- Se o fortnite-api.com ainda não tiver o item, ele vem com `in_catalog: false`, `name` igual ao `id` e `rarity: "Common"`. Mostre um placeholder nesse caso.
