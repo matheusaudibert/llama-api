@@ -24,8 +24,9 @@ VBUCKS_CATEGORIES = [
     "Currency:MtxPurchaseBonus",
 ]
 
-# console accounts a buyer can link, as named in externalAuths
-LINKABLE_PLATFORMS = ["psn", "xbl", "nintendo"]
+# accounts a new owner can link on epicgames.com/account/connections, as named in externalAuths.
+# Sign-in providers (google, apple, facebook, lego…) still show up in external_auths when linked.
+LINKABLE_PLATFORMS = ["psn", "xbl", "nintendo", "steam", "github", "twitch"]
 
 
 class EpicError(Exception):

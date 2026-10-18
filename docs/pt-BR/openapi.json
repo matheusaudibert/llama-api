@@ -817,7 +817,7 @@
             },
             "type": "array",
             "title": "External Auths",
-            "description": "Plataformas conectadas à conta."
+            "description": "Todas as plataformas e provedores de login vinculados à conta, como a Epic informa (psn, xbl, nintendo, steam, github, twitch, google, apple…)."
           },
           "linkable_platforms": {
             "items": {
@@ -825,7 +825,7 @@
             },
             "type": "array",
             "title": "Linkable Platforms",
-            "description": "Consoles (psn, xbl, nintendo) sem vínculo com a conta, que um novo dono pode vincular."
+            "description": "Plataformas que podem ser vinculadas no epicgames.com (psn, xbl, nintendo, steam, github, twitch) e ainda não estão vinculadas à conta, então um novo dono pode vinculá-las."
           },
           "account_level": {
             "type": "integer",

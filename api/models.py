@@ -54,8 +54,8 @@ class AccountSummary(BaseModel):
     mtx_platform: str | None = Field(None, description="Platform the V-Bucks purchases are tied to, e.g. EpicPC, PSN, Live.")
     refund_credits: int = Field(description="Refund tickets left.")
     refunds_used: int = Field(description="Refund tickets already used.")
-    external_auths: list[ExternalAuth] = Field(description="Platforms connected to the account.")
-    linkable_platforms: list[str] = Field(description="Consoles (psn, xbl, nintendo) not linked to the account, which a new owner can link.")
+    external_auths: list[ExternalAuth] = Field(description="Every platform or sign-in provider linked to the account, as Epic reports it (psn, xbl, nintendo, steam, github, twitch, google, apple…).")
+    linkable_platforms: list[str] = Field(description="Platforms that can be linked on epicgames.com (psn, xbl, nintendo, steam, github, twitch) and are not linked to the account yet, so a new owner can link them.")
     account_level: int
     lifetime_wins: int = Field(description="Wins over the whole account, current season included.")
     total_wins: int = Field(description="Wins summed over all past seasons.")
