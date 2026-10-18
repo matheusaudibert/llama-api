@@ -2,47 +2,49 @@
 
 # Llama API
 
-API HTTP para logar em contas Epic Games (device code flow) e ler os dados do Fortnite: conta, V-Bucks, estatísticas e locker completo. Feita para servir de backend a bots de Discord que mostram as skins dos jogadores.
+HTTP API to log in to Epic Games accounts (device code flow) and read the Fortnite data: account, V-Bucks, stats and the full locker. Built as the backend for Discord bots that show players' skins.
+
+📖 **Documentation:** [llamaapi.mintlify.site](https://llamaapi.mintlify.site) ([Português](https://llamaapi.mintlify.site/pt-BR/guides/introduction))
 
 ## Endpoints
 
-| Método | Rota | Descrição |
+| Method | Route | Description |
 |---|---|---|
-| `POST` | `/auth/device` | Inicia um login e devolve o link de autorização da Epic |
-| `GET` | `/auth/{session_id}` | Status do login (`pending`, `completed`, `expired`, `error`) |
-| `DELETE` | `/auth/{session_id}` | Encerra a sessão e invalida o token na Epic |
-| `GET` | `/accounts/{session_id}/summary` | Dados da conta, V-Bucks, plataformas e estatísticas |
-| `GET` | `/accounts/{session_id}/locker` | Todos os cosméticos, por categoria e ordenados por raridade |
-| `POST` | `/render/{category}` | PNG do locker por categoria (`skins`, `backpacks`, `pickaxes`, `gliders`, `emotes`, `mythics`) |
-| `GET` | `/health` | Healthcheck (sem API key) |
+| `POST` | `/auth/device` | Starts a login and returns the Epic authorization link |
+| `GET` | `/auth/{session_id}` | Login status (`pending`, `completed`, `expired`, `error`) |
+| `DELETE` | `/auth/{session_id}` | Ends the session and revokes the Epic token |
+| `GET` | `/accounts/{session_id}/summary` | Account data, V-Bucks, platforms and stats |
+| `GET` | `/accounts/{session_id}/locker` | Every cosmetic, by category and sorted by rarity |
+| `POST` | `/render/{category}` | Locker PNG per category (`skins`, `backpacks`, `pickaxes`, `gliders`, `emotes`, `mythics`) |
+| `GET` | `/health` | Healthcheck (no API key) |
 
-Todos os endpoints, menos `/health`, exigem o header `X-API-Key`.
+Every endpoint except `/health` requires the `X-API-Key` header.
 
-## Self-hosted ou hospedada
+## Self-hosted or hosted
 
-A API foi feita para ser self-hosted: rode a sua própria instância com a sua própria `API_KEY`. Para usar a instância hospedada em `https://llamaapi.audibert.dev`, peça uma API key [abrindo uma issue](https://github.com/matheusaudibert/llama-api/issues/new).
+The API is made to be self-hosted: run your own instance with your own `API_KEY`. To use the hosted instance at `https://llamaapi.audibert.dev`, ask for an API key by [opening an issue](https://github.com/matheusaudibert/llama-api/issues/new).
 
-## Rodando
+## Running
 
 ```bash
 pip install -r requirements.txt
-API_KEY="sua-chave" uvicorn api.main:app --port 8000
+API_KEY="your-key" uvicorn api.main:app --port 8000
 ```
 
-Ou com Docker:
+Or with Docker:
 
 ```bash
 docker build -t llama-api .
-docker run -p 8000:8000 -e API_KEY="sua-chave" llama-api
+docker run -p 8000:8000 -e API_KEY="your-key" llama-api
 ```
 
-Swagger UI em `http://localhost:8000/docs`.
+Swagger UI at `http://localhost:8000/docs`.
 
-## Documentação
+## Documentation
 
-A documentação completa (guias, deploy com Docker, exemplo com discord.js e referência da API) fica em [`docs/`](docs) e é publicada com o [Mintlify](https://mintlify.com).
+The full documentation (guides, Docker deploy, discord.js example and API reference) is published at [llamaapi.mintlify.site](https://llamaapi.mintlify.site). Its source lives in [`docs/`](docs) and is built with [Mintlify](https://mintlify.com).
 
-Para rodar a documentação localmente:
+To run the documentation locally:
 
 ```bash
 npm i -g mint
@@ -50,7 +52,7 @@ cd docs
 mint dev
 ```
 
-Depois de mudar endpoints ou modelos, regenere o spec:
+After changing endpoints or models, regenerate the specs:
 
 ```bash
 python scripts/export_openapi.py
