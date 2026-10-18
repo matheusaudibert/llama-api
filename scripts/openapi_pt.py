@@ -88,7 +88,7 @@ PT = {
     'Emotes in the emote wheel, in slot order. Empty slots are skipped.': 'Emotes da roda de emotes, na ordem dos espaços. Espaços vazios ficam de fora.',
     'Wraps, in slot order. Empty slots are skipped.': 'Envelopamentos, na ordem dos espaços. Espaços vazios ficam de fora.',
     'Item name in Brazilian Portuguese. Same as `name` when there is no translation yet.': 'Nome do item em português do Brasil. Igual ao `name` quando ainda não há tradução.',
-    'Language of the item names on the cards.': 'Idioma dos nomes dos itens nos cards.',
+    'Language of the image: the header (LOCKER / ARMÁRIO, the category name) and the item names on the cards.': 'Idioma da imagem: o cabeçalho (LOCKER / ARMÁRIO, o nome da categoria) e os nomes dos itens nos cards.',
     'Rarity background (the square behind the item), served by this API. Draw `icon` on top of it.': 'Fundo da raridade (o quadrado atrás do item), servido por esta API. Desenhe o `icon` por cima dele.',
     'Rarity background': 'Fundo da raridade',
     'The square drawn behind an item of that rarity, as linked in `images.background`. Does not require an API key.': 'O quadrado desenhado atrás de um item dessa raridade, como no link de `images.background`. Não exige API key.',

@@ -155,7 +155,7 @@ class RenderItem(BaseModel):
 
 class RenderRequest(BaseModel):
     display_name: str = Field(min_length=1, max_length=64, description="Account nickname, shown in the header.")
-    language: Literal["en", "pt-BR"] = Field("en", description="Language of the item names on the cards.")
+    language: Literal["en", "pt-BR"] = Field("en", description="Language of the image: the header (LOCKER / ARMÁRIO, the category name) and the item names on the cards.")
     items: list[RenderItem] = Field(
         max_length=5000,
         description="Account items. You can send the `/locker` items as they are: extra fields are ignored and only the requested category is drawn.",

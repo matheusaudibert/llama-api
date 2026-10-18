@@ -121,7 +121,7 @@ Os fundos são servidos pela própria API em `GET /backgrounds/{name}.png`, sem 
   A URL do `background` usa o host pelo qual a requisição chegou. Atrás de um proxy que muda o host, defina a variável de ambiente `PUBLIC_URL` (por exemplo `https://api.seudominio.com`).
 </Note>
 
-Para uma imagem pronta do locker, use `POST /render/{category}`, com `category` igual a `skins`, `backpacks`, `pickaxes`, `gliders`, `emotes` ou `mythics`. A `mythics` junta os itens míticos de todas essas categorias, com os trajes primeiro. Ela devolve um PNG com um cabeçalho (ícone da categoria, "LOCKER", nome da categoria com a quantidade, logo da Epic Games, nick e data) e uma grade com um card por item, com o fundo da raridade e o nome.
+Para uma imagem pronta do locker, use `POST /render/{category}`, com `category` igual a `skins`, `backpacks`, `pickaxes`, `gliders`, `emotes` ou `mythics`. A `mythics` junta os itens míticos de todas essas categorias, com os trajes primeiro. Ela devolve um PNG com um cabeçalho (ícone da categoria, "LOCKER" ou "ARMÁRIO", nome da categoria com a quantidade, logo da Epic Games, nick e data) e uma grade com um card por item, com o fundo da raridade e o nome.
 
 A rota não usa sessão. Envie os itens que você salvou do `/locker`: dá para gerar e regerar a imagem a qualquer momento, sem um novo login.
 
@@ -135,7 +135,7 @@ curl -X POST https://api.seudominio.com/render/skins \
 
 - Pode mandar os itens de todas as categorias juntos: só os da categoria pedida entram na imagem.
 - Envie `owned_styles`: sem ele, os OGs (Renegade Raider, Ghoul Trooper, Skull Trooper…) não são reconhecidos.
-- Envie `"language": "pt-BR"` para os nomes dos itens em português nos cards. O padrão é `en`.
+- `"language"` define o idioma da imagem inteira: `en` (padrão) dá "LOCKER", "SKINS", "BACK BLINGS", "PICKAXES"… e os nomes dos itens em inglês; `pt-BR` dá "ARMÁRIO", "TRAJES", "ACESSÓRIOS PARA AS COSTAS", "FERRAMENTAS DE COLETA"… e os nomes em português.
 - Sem nenhum item da categoria, a resposta é `422`.
 - Contas grandes são reduzidas para caber em 2048 px de largura. A primeira imagem de uma conta grande pode levar alguns segundos, porque os ícones são baixados e ficam em cache.
 

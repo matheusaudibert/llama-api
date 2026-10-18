@@ -121,7 +121,7 @@ The backgrounds are served by the API itself at `GET /backgrounds/{name}.png`, w
   The `background` URL uses the host the request came in on. Behind a proxy that changes the host, set the `PUBLIC_URL` environment variable (for example `https://api.yourdomain.com`).
 </Note>
 
-For a ready-made locker image, use `POST /render/{category}`, with `category` set to `skins`, `backpacks`, `pickaxes`, `gliders`, `emotes` or `mythics`. `mythics` gathers the mythic items of all those categories, outfits first. It returns a PNG with a header (category icon, "LOCKER", category name with the count, Epic Games logo, nickname and date) and a grid with one card per item, with the rarity background and the name.
+For a ready-made locker image, use `POST /render/{category}`, with `category` set to `skins`, `backpacks`, `pickaxes`, `gliders`, `emotes` or `mythics`. `mythics` gathers the mythic items of all those categories, outfits first. It returns a PNG with a header (category icon, "LOCKER" or "ARMÁRIO", category name with the count, Epic Games logo, nickname and date) and a grid with one card per item, with the rarity background and the name.
 
 The route does not use a session. Send the items you saved from `/locker`: you can render the image again at any time, without a new login.
 
@@ -135,7 +135,7 @@ curl -X POST https://api.yourdomain.com/render/skins \
 
 - You can send the items of every category together: only the requested category goes into the image.
 - Send `owned_styles`: without it, OGs (Renegade Raider, Ghoul Trooper, Skull Trooper…) are not recognized.
-- Send `"language": "pt-BR"` for the item names in Portuguese on the cards. The default is `en`.
+- `"language"` sets the language of the whole image: `en` (default) gives "LOCKER", "SKINS", "BACK BLINGS", "PICKAXES"… and the English item names; `pt-BR` gives "ARMÁRIO", "TRAJES", "ACESSÓRIOS PARA AS COSTAS", "FERRAMENTAS DE COLETA"… and the Portuguese item names.
 - Without any item of the category, the response is `422`.
 - Large accounts are scaled down to fit 2048 px of width. The first image of a large account can take a few seconds, because the icons are downloaded and then cached.
 

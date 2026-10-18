@@ -1646,7 +1646,7 @@
               "pt-BR"
             ],
             "title": "Language",
-            "description": "Idioma dos nomes dos itens nos cards.",
+            "description": "Idioma da imagem: o cabeçalho (LOCKER / ARMÁRIO, o nome da categoria) e os nomes dos itens nos cards.",
             "default": "en"
           },
           "items": {

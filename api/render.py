@@ -31,13 +31,26 @@ SUBTITLE = (150, 150, 150, 255)
 NICK = (225, 225, 225, 255)
 DOWNLOAD_CONCURRENCY = 16
 
+# header text per language: the big title and the category name; pt-BR uses the game's own terms
 TITLES = {
-    "skins": "TRAJES",
-    "backpacks": "MOCHILAS",
-    "pickaxes": "FERRAMENTAS DE COLETA",
-    "gliders": "ASAS-DELTAS",
-    "emotes": "GESTOS",
-    "mythics": "MÍTICOS",
+    "en": {
+        "locker": "LOCKER",
+        "skins": "SKINS",
+        "backpacks": "BACK BLINGS",
+        "pickaxes": "PICKAXES",
+        "gliders": "GLIDERS",
+        "emotes": "EMOTES",
+        "mythics": "MYTHICS",
+    },
+    "pt-BR": {
+        "locker": "ARMÁRIO",
+        "skins": "TRAJES",
+        "backpacks": "ACESSÓRIOS PARA AS COSTAS",
+        "pickaxes": "FERRAMENTAS DE COLETA",
+        "gliders": "ASAS-DELTAS",
+        "emotes": "GESTOS",
+        "mythics": "MÍTICOS",
+    },
 }
 MYTHIC_CATEGORIES = ["skins", "backpacks", "pickaxes", "gliders", "emotes"]
 
@@ -146,7 +159,7 @@ def _logo(height: int) -> Image.Image:
     return logo
 
 
-def _header(width: int, height: int, category: str, count: int, display_name: str) -> Image.Image:
+def _header(width: int, height: int, category: str, count: int, display_name: str, language: str) -> Image.Image:
     header = Image.new("RGBA", (width, height), BACKGROUND)
     draw = ImageDraw.Draw(header)
     pad = height // 8
@@ -165,8 +178,9 @@ def _header(width: int, height: int, category: str, count: int, display_name: st
     )
     x += slant + bar_w + pad
 
-    title = _italic("LOCKER", _font(int(height * 0.46)), "white")
-    subtitle = _italic(f"{TITLES[category]} ({count})", _font(int(height * 0.27)), SUBTITLE)
+    titles = TITLES[language]
+    title = _italic(titles["locker"], _font(int(height * 0.46)), "white")
+    subtitle = _italic(f"{titles[category]} ({count})", _font(int(height * 0.27)), SUBTITLE)
     gap = height // 14
     top = (height - title.height - gap - subtitle.height) // 2
     header.alpha_composite(title, (x, top))
@@ -187,7 +201,7 @@ def _header(width: int, height: int, category: str, count: int, display_name: st
     return header
 
 
-def _compose(category: str, items: list, icons: list, display_name: str) -> bytes:
+def _compose(category: str, items: list, icons: list, display_name: str, language: str) -> bytes:
     cols = max(MIN_COLS, math.ceil(math.sqrt(len(items))))
     rows = math.ceil(len(items) / cols)
     gap = 4
@@ -197,7 +211,7 @@ def _compose(category: str, items: list, icons: list, display_name: str) -> byte
     width = cols * (cell + gap) + gap
     header_h = max(120, width // 12)
     image = Image.new("RGBA", (width, header_h + rows * (cell + gap) + gap), BACKGROUND)
-    image.alpha_composite(_header(width, header_h, category, len(items), display_name))
+    image.alpha_composite(_header(width, header_h, category, len(items), display_name, language))
 
     for idx, (item, icon) in enumerate(zip(items, icons)):
         card = _card(item, icon)
@@ -235,4 +249,4 @@ async def render_category(
 
     sem = asyncio.Semaphore(DOWNLOAD_CONCURRENCY)
     icons = await asyncio.gather(*[_fetch_icon(session, sem, item) for item in items])
-    return await asyncio.to_thread(_compose, category, items, icons, display_name)
+    return await asyncio.to_thread(_compose, category, items, icons, display_name, language)
