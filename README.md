@@ -17,9 +17,10 @@ HTTP API to log in to Epic Games accounts (device code flow) and read the Fortni
 | `GET` | `/accounts/{session_id}/locker` | Every cosmetic, by category and sorted by rarity, with names in English and Portuguese |
 | `GET` | `/accounts/{session_id}/equipped` | Items equipped in the active loadout (skin, pickaxe, emotes…) |
 | `POST` | `/render/{category}` | Locker PNG per category (`skins`, `backpacks`, `pickaxes`, `gliders`, `emotes`, `mythics`), names in English or Portuguese |
+| `GET` | `/backgrounds/{name}.png` | Rarity backgrounds linked in each item's `images.background` (no API key) |
 | `GET` | `/health` | Healthcheck (no API key) |
 
-Every endpoint except `/health` requires the `X-API-Key` header.
+Every endpoint except `/health` and `/backgrounds` requires the `X-API-Key` header.
 
 ## Self-hosted or hosted
 

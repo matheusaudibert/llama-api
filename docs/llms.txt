@@ -4,7 +4,7 @@ z# Llama API
 
 Important notes:
 
-- Authentication: every endpoint except `GET /health` needs the header `X-API-Key: <key>`, the `API_KEY` environment variable of the instance. Missing or wrong key returns `401`.
+- Authentication: every endpoint except `GET /health` and `GET /backgrounds/{name}.png` needs the header `X-API-Key: <key>`, the `API_KEY` environment variable of the instance. Missing or wrong key returns `401`.
 - Base URL: the domain where the instance runs, e.g. `https://api.yourdomain.com`, or `https://llamaapi.audibert.dev` for the hosted one.
 - Typical flow: `POST /auth/device` returns `session_id` and `verification_url`; show the URL to the player; poll `GET /auth/{session_id}` every ~3 s until `status` leaves `pending`; on `completed`, call `GET /accounts/{session_id}/summary`, `GET /accounts/{session_id}/locker` and, if needed, `GET /accounts/{session_id}/equipped`; then `DELETE /auth/{session_id}` to revoke the Epic token.
 - Login states: `pending`, `completed`, `expired` (link not approved within ~10 min, `expires_in` seconds), `error` (see the `error` field).
@@ -12,7 +12,7 @@ Important notes:
 - Errors always have the shape `{ "detail": "..." }`. `409` means the login is not `completed` yet; `422` means an invalid parameter, or no item of the category in `POST /render/{category}`; `502` means Epic Games returned an error.
 - Epic tokens never leave the API; clients only see the `session_id`, which must be treated as a secret.
 - Sessions live in memory: run a single instance with a single worker. Restarting the API drops every session. Serverless platforms (Vercel, Netlify) do not work.
-- Locker items have `id`, `name`, `name_pt` (Brazilian Portuguese name, same as `name` when there is no translation yet), `rarity`, `series`, `type`, `images` (`icon`, `small_icon`, `featured` from the fortnite-api.com CDN), `owned_styles`, `is_exclusive`, `is_mythic` and `in_catalog`. Lists are sorted by rarity (Mythic, Legendary, series, Epic, Rare, Uncommon, Common), then by name.
+- Locker items have `id`, `name`, `name_pt` (Brazilian Portuguese name, same as `name` when there is no translation yet), `rarity`, `series`, `type`, `images` (`icon` with a transparent background, `small_icon` and `featured` from the fortnite-api.com CDN, plus `background`: the full URL of the rarity background served by this API, to draw `icon` on top of), `owned_styles`, `is_exclusive`, `is_mythic` and `in_catalog`. Lists are sorted by rarity (Mythic, Legendary, series, Epic, Rare, Uncommon, Common), then by name.
 - Mythic rule: OG items that came back to the shop (Renegade Raider `Mat3`, Aerial Assault Trooper `Stage2`, The Paradigm `Mat3`, Ghoul Trooper `Mat3`, Skull Trooper `Mat1`, Fishstick `Stage3`) are mythic only when the player owns that original style in `owned_styles`; their name becomes `OG ...` (`name_pt` too, e.g. `OG Saqueadora Renegada`) and the icon shows the style. Other rare items (Black Knight, Travis Scott, Floss...) are mythic only if they were not sold in the item shop in the last 2 years.
 - Items released after the last catalog refresh are fetched on demand; if fortnite-api.com does not know an item yet, it comes with `in_catalog: false`, `name` equal to `id` and `rarity: "Common"`.
 - `POST /render/{category}` does not need a session: send `{"display_name": "...", "items": [{"id": "...", "owned_styles": [...]}]}`, usually the items saved from `/locker` as they are (extra fields are ignored). Categories: `skins`, `backpacks`, `pickaxes`, `gliders`, `emotes` and `mythics` (mythic items of every category). Optional `"language": "pt-BR"` puts the Portuguese names on the cards (default `en`). Returns `image/png`, at most 2048 px wide. Without `owned_styles`, OGs are not recognized.
@@ -28,6 +28,7 @@ Important notes:
 - [GET /accounts/{session_id}/locker](/api-reference/endpoints/account/locker): Every cosmetic, split into `skins`, `backpacks`, `pickaxes`, `emotes`, `gliders`, `wraps`, `sprays`, `others` and `banners`, plus `counts` per category.
 - [GET /accounts/{session_id}/equipped](/api-reference/endpoints/account/equipped-items): Items equipped right now in the active loadout (saved presets are not included): `skin`, `backpack`, `pickaxe`, `glider`, `contrail`, `shoes`, `aura`, `banner`, `lobby_music` and `loading_screen` (each an item or `null`), plus `emotes` and `wraps` (lists in slot order). Items have the locker fields plus `styles`, the style tags selected on them.
 - [POST /render/{category}](/api-reference/endpoints/images/locker-image): PNG image of one locker category, in skin checker style: header with category, count, Epic Games logo, nickname and date, and one card per item with the rarity background and name. No session needed.
+- [GET /backgrounds/{name}.png](/api-reference/endpoints/images/rarity-background): Rarity background PNGs, the URLs in `images.background`. No API key, cached for a week. Names: `common`, `uncommon`, `rare`, `epic`, `legendary`, `mythic`, `icon-series`, `dark-series`, `star-wars-series`, `marvel-series`, `dc-series`, `gaming-legends-series`, `shadow-series`, `slurp-series`, `lava-series`, `frozen-series` and `series`. Mythic items use `mythic`. The base URL comes from the request host, or from the `PUBLIC_URL` environment variable.
 - [GET /health](/api-reference/endpoints/health/health-check): Healthcheck without API key. Returns `status`, `cosmetics_loaded` and `active_sessions`.
 
 ## Guides
@@ -41,7 +42,7 @@ Important notes:
 
 ## Self-hosting
 
-- [Production deploy](/self-hosting/production): Deploy the Docker image on any server or platform (VPS, Railway, Fly.io, Coolify, Dokploy, CapRover). Environment variables `API_KEY` (required), `CATALOG_REFRESH_SECONDS` (default `21600`), `LOG_LEVEL` (default `INFO`) and `LOG_FORMAT` (`text` or `json`); structured logs with request ids that never contain tokens or session ids; HTTPS with a reverse proxy, the `/health` healthcheck, updates and why it must run as a single replica.
+- [Production deploy](/self-hosting/production): Deploy the Docker image on any server or platform (VPS, Railway, Fly.io, Coolify, Dokploy, CapRover). Environment variables `API_KEY` (required), `CATALOG_REFRESH_SECONDS` (default `21600`), `LOG_LEVEL` (default `INFO`), `LOG_FORMAT` (`text` or `json`) and `PUBLIC_URL` (base of the `images.background` URLs); structured logs with request ids that never contain tokens or session ids; HTTPS with a reverse proxy, the `/health` healthcheck, updates and why it must run as a single replica.
 - [Local Docker](/self-hosting/local): Build and run the image locally and regenerate the OpenAPI specs with `python scripts/export_openapi.py`.
 
 ## Optional

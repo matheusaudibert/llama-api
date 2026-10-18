@@ -35,7 +35,8 @@ icon: "shirt"
   "images": {
     "icon": "https://fortnite-api.com/images/cosmetics/br/cid_028_athena_commando_f/icon.png",
     "small_icon": "https://fortnite-api.com/images/cosmetics/br/cid_028_athena_commando_f/smallicon.png",
-    "featured": "https://fortnite-api.com/images/cosmetics/br/cid_028_athena_commando_f/featured.png"
+    "featured": "https://fortnite-api.com/images/cosmetics/br/cid_028_athena_commando_f/featured.png",
+    "background": "https://api.yourdomain.com/backgrounds/mythic.png"
   },
   "owned_styles": ["Mat1", "Mat2"],
   "is_exclusive": true,
@@ -104,7 +105,21 @@ Every list is already sorted:
 
 ## Images
 
-The URLs in `images` point straight to the fortnite-api.com CDN.
+`icon`, `small_icon` and `featured` point straight to the fortnite-api.com CDN. `icon` has a transparent background.
+
+`background` is the rarity background, the square the game draws behind the item. To build an inventory card, draw `icon` on top of `background`:
+
+```html
+<div class="card" style="background-image: url(ITEM.images.background); background-size: cover">
+  <img src="ITEM.images.icon" alt="ITEM.name">
+</div>
+```
+
+The backgrounds are served by the API itself at `GET /backgrounds/{name}.png`, without an API key and with a one-week cache header. The names are `common`, `uncommon`, `rare`, `epic`, `legendary`, `mythic`, `icon-series`, `dark-series`, `star-wars-series`, `marvel-series`, `dc-series`, `gaming-legends-series`, `shadow-series`, `slurp-series`, `lava-series`, `frozen-series` and `series` (for series that have no square of their own). Mythic items, OGs included, get `mythic`.
+
+<Note>
+  The `background` URL uses the host the request came in on. Behind a proxy that changes the host, set the `PUBLIC_URL` environment variable (for example `https://api.yourdomain.com`).
+</Note>
 
 For a ready-made locker image, use `POST /render/{category}`, with `category` set to `skins`, `backpacks`, `pickaxes`, `gliders`, `emotes` or `mythics`. `mythics` gathers the mythic items of all those categories, outfits first. It returns a PNG with a header (category icon, "LOCKER", category name with the count, Epic Games logo, nickname and date) and a grid with one card per item, with the rarity background and the name.
 

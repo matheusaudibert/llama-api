@@ -14,6 +14,7 @@ from .cosmetic_data import (
     sub_order,
 )
 from .logs import fields
+from .rarities import background_path
 
 logger = logging.getLogger("api.catalog")
 
@@ -186,17 +187,19 @@ def cosmetic_entry(cid: str, styles: list, info: dict | None, name_pt: str | Non
     if is_mythic:
         rarity = "Mythic"
     images = info.get("images", {})
+    series = (info.get("series") or {}).get("value")
     return {
         "id": cid,
         "name": og[1] if og else name,
         "name_pt": og[2].format(name_pt) if og else name_pt,
         "rarity": rarity,
-        "series": (info.get("series") or {}).get("value"),
+        "series": series,
         "type": info.get("type", {}).get("value"),
         "images": {
             "icon": (og and _style_image(info, og[0])) or images.get("icon") or f"https://fortnite-api.com/images/cosmetics/br/{cid}/icon.png",
             "small_icon": images.get("smallIcon") or f"https://fortnite-api.com/images/cosmetics/br/{cid}/smallicon.png",
             "featured": images.get("featured"),
+            "background": background_path(rarity, series),
         },
         "owned_styles": styles,
         "is_exclusive": cid in EXCLUSIVE_SET,
@@ -232,17 +235,19 @@ def banner_entry(catalog: Catalog, banner_id: str) -> dict | None:
     if not info or not info.get("images", {}).get("icon"):
         return None
     cid = f"banner_{banner_id}"
+    rarity = "Mythic" if cid in MYTHIC_SET else "Uncommon"
     return {
         "id": cid,
         "name": info.get("devName") or cid,
         "name_pt": info.get("devName") or cid,
-        "rarity": "Mythic" if cid in MYTHIC_SET else "Uncommon",
+        "rarity": rarity,
         "series": None,
         "type": "banner",
         "images": {
             "icon": info["images"]["icon"],
             "small_icon": info["images"].get("smallIcon"),
             "featured": None,
+            "background": background_path(rarity, None),
         },
         "owned_styles": [],
         "is_exclusive": False,

@@ -6,6 +6,55 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/backgrounds/{name}.png": {
+      "get": {
+        "tags": [
+          "Images"
+        ],
+        "summary": "Rarity background",
+        "description": "The square drawn behind an item of that rarity, as linked in `images.background`. Does not require an API key.",
+        "operationId": "rarity_background_backgrounds__name__png_get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PNG of the rarity background",
+            "content": {
+              "image/png": {}
+            }
+          },
+          "404": {
+            "description": "Unknown rarity background",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "tags": [
@@ -930,6 +979,18 @@
               }
             ],
             "title": "Featured"
+          },
+          "background": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Background",
+            "description": "Rarity background (the square behind the item), served by this API. Draw `icon` on top of it."
           }
         },
         "type": "object",

@@ -42,6 +42,7 @@
                   "GET /accounts/{session_id}/locker",
                   "GET /accounts/{session_id}/equipped",
                   "POST /render/{category}",
+                  "GET /backgrounds/{name}.png",
                   "GET /health"
                 ]
               }
@@ -99,6 +100,7 @@
                   "GET /accounts/{session_id}/locker",
                   "GET /accounts/{session_id}/equipped",
                   "POST /render/{category}",
+                  "GET /backgrounds/{name}.png",
                   "GET /health"
                 ]
               }

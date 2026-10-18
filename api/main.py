@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 
 import aiohttp
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, Response, Security
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.security import APIKeyHeader
 
 from .cosmetics import Catalog, build_equipped, build_locker
@@ -37,6 +37,7 @@ from .models import (
     RenderRequest,
 )
 from .logs import fields, request_id, session_ref, setup_logging
+from .rarities import BACKGROUNDS, square_file
 from .render import render_category
 from .sessions import Session, SessionStore
 
@@ -45,6 +46,8 @@ logger = logging.getLogger("api")
 
 API_KEY = os.environ.get("API_KEY")
 CATALOG_REFRESH_SECONDS = int(os.environ.get("CATALOG_REFRESH_SECONDS", 6 * 60 * 60))
+# public base URL for the links this API serves (images.background); defaults to the request's host
+PUBLIC_URL = os.environ.get("PUBLIC_URL", "").rstrip("/")
 
 catalog = Catalog()
 store = SessionStore()
@@ -142,6 +145,28 @@ def logged_session(session_id: str) -> Session:
     if session.token_expired():
         raise HTTPException(status_code=410, detail="Epic token expired, log in again")
     return session
+
+
+def public_url(request: Request) -> str:
+    return PUBLIC_URL or str(request.base_url).rstrip("/")
+
+
+def absolute_background(item: dict, base: str) -> None:
+    item["images"]["background"] = base + item["images"]["background"]
+
+
+@app.get(
+    "/backgrounds/{name}.png",
+    response_class=FileResponse,
+    tags=["Images"],
+    summary="Rarity background",
+    responses={200: {"content": {"image/png": {}}, "description": "PNG of the rarity background"}, 404: {"model": ErrorResponse, "description": "Unknown rarity background"}},
+)
+async def rarity_background(name: str):
+    """The square drawn behind an item of that rarity, as linked in `images.background`. Does not require an API key."""
+    if name not in BACKGROUNDS:
+        raise HTTPException(status_code=404, detail="Unknown rarity background")
+    return FileResponse(square_file(name), media_type="image/png", headers={"Cache-Control": "public, max-age=604800"})
 
 
 @app.get("/health", response_model=Health, tags=["Health"], summary="Health check")
@@ -253,7 +278,7 @@ async def account_summary(session: Session = Depends(logged_session)):
     summary="Locker",
     responses=ACCOUNT_ERRORS,
 )
-async def account_locker(session: Session = Depends(logged_session)):
+async def account_locker(request: Request, session: Session = Depends(logged_session)):
     """Every cosmetic on the account, split by category and sorted by rarity."""
     user = session.user
     try:
@@ -265,6 +290,10 @@ async def account_locker(session: Session = Depends(logged_session)):
         raise HTTPException(status_code=502, detail=str(e))
 
     locker = await build_locker(http, catalog, athena, get_banner_ids(common_core))
+    base = public_url(request)
+    for items in locker.values():
+        for item in items:
+            absolute_background(item, base)
     return {
         "counts": {k: len(v) for k, v in locker.items()},
         **locker,
@@ -278,7 +307,7 @@ async def account_locker(session: Session = Depends(logged_session)):
     summary="Equipped items",
     responses=ACCOUNT_ERRORS,
 )
-async def account_equipped(session: Session = Depends(logged_session)):
+async def account_equipped(request: Request, session: Session = Depends(logged_session)):
     """The items equipped in the player's active loadout: skin, backpack, pickaxe, glider, emotes, wraps and more. Saved presets are not included."""
     try:
         if not session.eos_token_valid():
@@ -288,7 +317,13 @@ async def account_equipped(session: Session = Depends(logged_session)):
         loadouts = await get_active_loadouts(http, session.user, session.eos_token)
     except EpicError as e:
         raise HTTPException(status_code=502, detail=str(e))
-    return await build_equipped(http, catalog, loadouts)
+    equipped = await build_equipped(http, catalog, loadouts)
+    base = public_url(request)
+    for value in equipped.values():
+        for item in value if isinstance(value, list) else [value]:
+            if item:
+                absolute_background(item, base)
+    return equipped
 
 
 @router.post(

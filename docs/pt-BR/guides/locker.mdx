@@ -35,7 +35,8 @@ icon: "shirt"
   "images": {
     "icon": "https://fortnite-api.com/images/cosmetics/br/cid_028_athena_commando_f/icon.png",
     "small_icon": "https://fortnite-api.com/images/cosmetics/br/cid_028_athena_commando_f/smallicon.png",
-    "featured": "https://fortnite-api.com/images/cosmetics/br/cid_028_athena_commando_f/featured.png"
+    "featured": "https://fortnite-api.com/images/cosmetics/br/cid_028_athena_commando_f/featured.png",
+    "background": "https://api.seudominio.com/backgrounds/mythic.png"
   },
   "owned_styles": ["Mat1", "Mat2"],
   "is_exclusive": true,
@@ -104,7 +105,21 @@ Cada lista já vem ordenada:
 
 ## Imagens
 
-As URLs em `images` apontam direto para o CDN do fortnite-api.com.
+`icon`, `small_icon` e `featured` apontam direto para o CDN do fortnite-api.com. O `icon` tem fundo transparente.
+
+`background` é o fundo da raridade, o quadrado que o jogo desenha atrás do item. Para montar um card de inventário, desenhe o `icon` por cima do `background`:
+
+```html
+<div class="card" style="background-image: url(ITEM.images.background); background-size: cover">
+  <img src="ITEM.images.icon" alt="ITEM.name">
+</div>
+```
+
+Os fundos são servidos pela própria API em `GET /backgrounds/{name}.png`, sem API key e com cache de uma semana. Os nomes são `common`, `uncommon`, `rare`, `epic`, `legendary`, `mythic`, `icon-series`, `dark-series`, `star-wars-series`, `marvel-series`, `dc-series`, `gaming-legends-series`, `shadow-series`, `slurp-series`, `lava-series`, `frozen-series` e `series` (para séries sem quadrado próprio). Itens míticos, OGs incluídos, usam `mythic`.
+
+<Note>
+  A URL do `background` usa o host pelo qual a requisição chegou. Atrás de um proxy que muda o host, defina a variável de ambiente `PUBLIC_URL` (por exemplo `https://api.seudominio.com`).
+</Note>
 
 Para uma imagem pronta do locker, use `POST /render/{category}`, com `category` igual a `skins`, `backpacks`, `pickaxes`, `gliders`, `emotes` ou `mythics`. A `mythics` junta os itens míticos de todas essas categorias, com os trajes primeiro. Ela devolve um PNG com um cabeçalho (ícone da categoria, "LOCKER", nome da categoria com a quantidade, logo da Epic Games, nick e data) e uma grade com um card por item, com o fundo da raridade e o nome.
 

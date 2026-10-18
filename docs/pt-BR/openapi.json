@@ -6,6 +6,55 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/backgrounds/{name}.png": {
+      "get": {
+        "tags": [
+          "Imagens"
+        ],
+        "summary": "Fundo da raridade",
+        "description": "O quadrado desenhado atrás de um item dessa raridade, como no link de `images.background`. Não exige API key.",
+        "operationId": "rarity_background_backgrounds__name__png_get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PNG do fundo da raridade",
+            "content": {
+              "image/png": {}
+            }
+          },
+          "404": {
+            "description": "Fundo de raridade desconhecido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro de validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "tags": [
@@ -930,6 +979,18 @@
               }
             ],
             "title": "Featured"
+          },
+          "background": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Background",
+            "description": "Fundo da raridade (o quadrado atrás do item), servido por esta API. Desenhe o `icon` por cima dele."
           }
         },
         "type": "object",

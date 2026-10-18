@@ -66,6 +66,7 @@ class CosmeticImages(BaseModel):
     icon: str | None = None
     small_icon: str | None = None
     featured: str | None = None
+    background: str | None = Field(None, description="Rarity background (the square behind the item), served by this API. Draw `icon` on top of it.")
 
 
 class Cosmetic(BaseModel):

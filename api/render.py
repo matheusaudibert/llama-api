@@ -12,6 +12,7 @@ from PIL import Image, ImageDraw, ImageFont, UnidentifiedImageError
 
 from .cosmetics import Catalog, category_of, cosmetic_entry, sort_items
 from .logs import fields
+from .rarities import background_key, square_file
 
 logger = logging.getLogger("api.render")
 
@@ -29,25 +30,6 @@ BACKGROUND = (20, 20, 20, 255)
 SUBTITLE = (150, 150, 150, 255)
 NICK = (225, 225, 225, 255)
 DOWNLOAD_CONCURRENCY = 16
-
-SQUARES = {
-    "common": "commun",
-    "uncommon": "uncommun",
-    "rare": "rare",
-    "epic": "epico",
-    "legendary": "legendary",
-    "mythic": "mitico",
-    "icon series": "idolo",
-    "dark series": "dark",
-    "star wars series": "starwars",
-    "marvel series": "marvel",
-    "dc series": "dc",
-    "gaming legends series": "serie",
-    "shadow series": "shadow",
-    "slurp series": "slurp",
-    "lava series": "lava",
-    "frozen series": "hielo",
-}
 
 TITLES = {
     "skins": "TRAJES",
@@ -75,10 +57,10 @@ def _fit_font(draw: ImageDraw.ImageDraw, text: str, max_width: int, size: int) -
 
 
 def _square(rarity: str, series: str | None) -> Image.Image:
-    name = SQUARES.get(rarity.lower()) or ("serie" if series else "commun")
-    if name not in _squares:
-        _squares[name] = Image.open(ASSETS / "squares" / f"{name}.png").convert("RGBA").resize((CARD, CARD), Image.Resampling.LANCZOS)
-    return _squares[name]
+    key = background_key(rarity, series)
+    if key not in _squares:
+        _squares[key] = Image.open(square_file(key)).convert("RGBA").resize((CARD, CARD), Image.Resampling.LANCZOS)
+    return _squares[key]
 
 
 async def _fetch_icon(session: aiohttp.ClientSession, sem: asyncio.Semaphore, item: dict) -> bytes | None:

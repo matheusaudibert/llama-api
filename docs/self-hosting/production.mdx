@@ -49,6 +49,7 @@ The repository already has a ready-to-use `Dockerfile`. Anything that builds or 
     | `CATALOG_REFRESH_SECONDS` | No | `21600` | How often the fortnite-api.com catalog is reloaded |
     | `LOG_LEVEL` | No | `INFO` | `DEBUG`, `INFO`, `WARNING` or `ERROR`. `DEBUG` also logs the `/health` calls |
     | `LOG_FORMAT` | No | `text` | `text` for `key=value` lines, `json` for one JSON object per line |
+    | `PUBLIC_URL` | No | request host | Base URL used in `images.background`, e.g. `https://api.yourdomain.com`. Set it when a proxy changes the host |
 
     <Warning>
       The API does not start without `API_KEY`.
