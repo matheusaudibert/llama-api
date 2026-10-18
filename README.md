@@ -4,7 +4,7 @@
 
 HTTP API to log in to Epic Games accounts (device code flow) and read the Fortnite data: account, V-Bucks, stats and the full locker. Built as the backend for Discord bots that show players' skins.
 
-📖 **Documentation:** [llamaapi.mintlify.site](https://llamaapi.mintlify.site) ([Português](https://llamaapi.mintlify.site/pt-BR/guides/introduction))
+**Documentation:** [llamaapi.mintlify.site](https://llamaapi.mintlify.site)
 
 ## Endpoints
 
