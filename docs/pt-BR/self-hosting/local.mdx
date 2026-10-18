@@ -25,6 +25,8 @@ curl http://localhost:8000/health
 |---|---|---|---|
 | `API_KEY` | Sim | | Chave que o bot envia no header `X-API-Key` |
 | `CATALOG_REFRESH_SECONDS` | Não | `21600` | Intervalo de recarga do catálogo do fortnite-api.com |
+| `LOG_LEVEL` | Não | `INFO` | `DEBUG`, `INFO`, `WARNING` ou `ERROR`. `DEBUG` também registra as chamadas a `/health` |
+| `LOG_FORMAT` | Não | `text` | `text` para linhas `chave=valor`, `json` para um objeto JSON por linha |
 
 ## Atualizar a documentação da API
 

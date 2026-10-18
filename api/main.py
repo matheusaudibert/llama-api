@@ -1,10 +1,13 @@
 import asyncio
 import logging
 import os
+import secrets
+import time
 from contextlib import asynccontextmanager
 
 import aiohttp
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Response, Security
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, Response, Security
+from fastapi.responses import JSONResponse
 from fastapi.security import APIKeyHeader
 
 from .cosmetics import Catalog, build_equipped, build_locker
@@ -33,10 +36,12 @@ from .models import (
     RenderCategory,
     RenderRequest,
 )
+from .logs import fields, request_id, session_ref, setup_logging
 from .render import render_category
 from .sessions import Session, SessionStore
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+setup_logging()
+logger = logging.getLogger("api")
 
 API_KEY = os.environ.get("API_KEY")
 CATALOG_REFRESH_SECONDS = int(os.environ.get("CATALOG_REFRESH_SECONDS", 6 * 60 * 60))
@@ -52,17 +57,20 @@ async def lifespan(app: FastAPI):
     if not API_KEY:
         raise RuntimeError("Set the API_KEY environment variable before starting the API")
 
+    logger.info("Starting", extra=fields(version=app.version, catalog_refresh_s=CATALOG_REFRESH_SECONDS))
     http = aiohttp.ClientSession()
     await catalog.refresh(http)
     tasks = [
         asyncio.create_task(catalog.refresh_forever(http, CATALOG_REFRESH_SECONDS)),
         asyncio.create_task(store.cleanup_forever(http)),
     ]
+    logger.info("Ready")
     yield
+    logger.info("Shutting down", extra=fields(sessions=len(store.sessions)))
     for t in tasks:
         t.cancel()
     for sid in list(store.sessions):
-        await store.remove(http, sid)
+        await store.remove(http, sid, reason="shutdown")
     await http.close()
 
 
@@ -71,6 +79,7 @@ api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 def require_api_key(key: str | None = Security(api_key_header)):
     if key != API_KEY:
+        logger.warning("Rejected API key", extra=fields(reason="missing" if not key else "wrong"))
         raise HTTPException(status_code=401, detail="Invalid API key")
 
 
@@ -80,6 +89,36 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    # keep a caller's id so a bot can match its own logs, but cap it: it is client input
+    rid = (request.headers.get("x-request-id") or secrets.token_hex(6))[:64]
+    token = request_id.set(rid)
+    start = time.perf_counter()
+    try:
+        response = await call_next(request)
+    except Exception:
+        logger.exception("Unhandled error", extra=fields(method=request.method, route=request.url.path))
+        response = JSONResponse({"detail": "Internal server error"}, status_code=500)
+
+    # the route template (/auth/{session_id}), never the raw path with the session id
+    route = request.scope.get("route")
+    sid = request.path_params.get("session_id")
+    level = logging.ERROR if response.status_code >= 500 else logging.DEBUG if request.url.path == "/health" else logging.INFO
+    logger.log(level, "Request", extra=fields(
+        method=request.method,
+        route=getattr(route, "path", request.url.path),
+        status=response.status_code,
+        ms=round((time.perf_counter() - start) * 1000),
+        session=sid and session_ref(sid),
+    ))
+    response.headers["X-Request-ID"] = rid
+    request_id.reset(token)
+    return response
+
+
 router = APIRouter(
     dependencies=[Depends(require_api_key)],
     responses={401: {"model": ErrorResponse, "description": "Missing or invalid API key"}},
@@ -123,6 +162,7 @@ async def start_device_login():
     try:
         session = await store.start_device_login()
     except Exception as e:
+        logger.warning("Could not create device code", extra=fields(error=repr(e)))
         raise HTTPException(status_code=502, detail=f"Could not create Epic device code: {e}")
     return {
         "session_id": session.id,
@@ -149,7 +189,7 @@ async def login_status(session_id: str):
 @router.delete("/auth/{session_id}", status_code=204, tags=["Authentication"], summary="End session", responses=NOT_FOUND)
 async def logout(session_id: str):
     """Revokes the Epic token and deletes the session from memory."""
-    if not await store.remove(http, session_id):
+    if not await store.remove(http, session_id, reason="logout"):
         raise HTTPException(status_code=404, detail="Session not found")
     return Response(status_code=204)
 
@@ -244,6 +284,7 @@ async def account_equipped(session: Session = Depends(logged_session)):
         if not session.eos_token_valid():
             eos = await get_eos_token(http, session.user)
             session.eos_token, session.eos_expires_at = eos["access_token"], eos["expires_at"]
+            logger.info("EOS token issued", extra=fields(session=session_ref(session.id)))
         loadouts = await get_active_loadouts(http, session.user, session.eos_token)
     except EpicError as e:
         raise HTTPException(status_code=502, detail=str(e))
@@ -265,7 +306,15 @@ async def render_locker(category: RenderCategory, body: RenderRequest):
     owned = {}
     for item in body.items:
         owned.setdefault(item.id.lower(), []).extend(item.owned_styles)
+    start = time.perf_counter()
     png = await render_category(http, catalog, category.value, owned, body.display_name, body.language)
+    logger.info("Image rendered", extra=fields(
+        category=category.value,
+        items=len(owned),
+        language=body.language,
+        kb=png and len(png) // 1024,
+        ms=round((time.perf_counter() - start) * 1000),
+    ))
     if png is None:
         raise HTTPException(status_code=422, detail=f"No {category.value} in the item list")
     return Response(content=png, media_type="image/png")

@@ -8,8 +8,9 @@ from datetime import datetime, timedelta, timezone
 import aiohttp
 
 from .epic_auth import DeviceCodeExpired, EpicGenerator, EpicUser, kill_token
+from .logs import fields, session_ref
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("api.sessions")
 
 IDLE_TIMEOUT = 30 * 60
 
@@ -60,22 +61,28 @@ class SessionStore:
         )
         self.sessions[session.id] = session
         session.task = asyncio.create_task(self._wait_login(session, generator, device))
+        logger.info("Login started", extra=fields(session=session_ref(session.id), expires_in=session.expires_in, active=len(self.sessions)))
         return session
 
     async def _wait_login(self, session: Session, generator: EpicGenerator, device: dict) -> None:
+        ref = session_ref(session.id)
+        started = time.monotonic()
         try:
             session.user = await generator.poll_device_code(
                 device["device_code"], device["expires_in"], device["interval"]
             )
             session.status = "completed"
             session.last_used = time.monotonic()
-            logger.info(f"Session {session.id[:6]}… logged in")
-        except DeviceCodeExpired:
+            logger.info("Login completed", extra=fields(session=ref, wait_s=round(time.monotonic() - started)))
+        except DeviceCodeExpired as e:
             session.status = "expired"
+            logger.info("Login expired", extra=fields(session=ref, reason=str(e)))
+        except asyncio.CancelledError:
+            raise
         except Exception as e:
             session.status = "error"
             session.error = str(e)
-            logger.error(f"Login failed for session {session.id[:6]}…: {e}")
+            logger.exception("Login failed", extra=fields(session=ref))
         finally:
             await generator.close()
 
@@ -85,17 +92,26 @@ class SessionStore:
             session.last_used = time.monotonic()
         return session
 
-    async def remove(self, http: aiohttp.ClientSession, session_id: str) -> bool:
+    async def remove(self, http: aiohttp.ClientSession, session_id: str, reason: str) -> bool:
+        """reason: logout, idle, token_expired or shutdown. Only goes to the logs."""
         session = self.sessions.pop(session_id, None)
         if not session:
             return False
         if session.task and not session.task.done():
             session.task.cancel()
+        token_revoked = None
         if session.user:
             try:
-                await kill_token(http, session.user.access_token)
+                status = await kill_token(http, session.user.access_token)
+                token_revoked = status in (200, 204)
+                if not token_revoked:
+                    logger.warning("Epic refused to revoke the token", extra=fields(session=session_ref(session_id), status=status))
             except Exception as e:
-                logger.warning(f"Could not kill token: {e}")
+                token_revoked = False
+                logger.warning("Could not revoke the token", extra=fields(session=session_ref(session_id), error=repr(e)))
+        logger.info("Session removed", extra=fields(
+            session=session_ref(session_id), reason=reason, status=session.status, token_revoked=token_revoked, active=len(self.sessions),
+        ))
         return True
 
     async def cleanup_forever(self, http: aiohttp.ClientSession) -> None:
@@ -105,5 +121,7 @@ class SessionStore:
             for sid, s in list(self.sessions.items()):
                 if s.status == "pending":
                     continue
-                if now - s.last_used > IDLE_TIMEOUT or s.token_expired():
-                    await self.remove(http, sid)
+                if s.token_expired():
+                    await self.remove(http, sid, reason="token_expired")
+                elif now - s.last_used > IDLE_TIMEOUT:
+                    await self.remove(http, sid, reason="idle")

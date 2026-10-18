@@ -41,7 +41,7 @@ Important notes:
 
 ## Self-hosting
 
-- [Production deploy](/self-hosting/production): Deploy the Docker image on any server or platform (VPS, Railway, Fly.io, Coolify, Dokploy, CapRover). Environment variables `API_KEY` (required) and `CATALOG_REFRESH_SECONDS` (default `21600`), HTTPS with a reverse proxy, the `/health` healthcheck, updates and why it must run as a single replica.
+- [Production deploy](/self-hosting/production): Deploy the Docker image on any server or platform (VPS, Railway, Fly.io, Coolify, Dokploy, CapRover). Environment variables `API_KEY` (required), `CATALOG_REFRESH_SECONDS` (default `21600`), `LOG_LEVEL` (default `INFO`) and `LOG_FORMAT` (`text` or `json`); structured logs with request ids that never contain tokens or session ids; HTTPS with a reverse proxy, the `/health` healthcheck, updates and why it must run as a single replica.
 - [Local Docker](/self-hosting/local): Build and run the image locally and regenerate the OpenAPI specs with `python scripts/export_openapi.py`.
 
 ## Optional

@@ -1,8 +1,12 @@
+import logging
 import secrets
 
 import aiohttp
 
 from .epic_auth import EpicUser
+from .logs import fields
+
+logger = logging.getLogger("api.epic")
 
 ACCOUNT_URL = "https://account-public-service-prod03.ol.epicgames.com/account/api/public/account"
 PROFILE_URL = "https://fortnite-public-service-prod11.ol.epicgames.com/fortnite/api/game/v2/profile"
@@ -24,9 +28,20 @@ LINKABLE_PLATFORMS = ["psn", "xbl", "nintendo"]
 
 
 class EpicError(Exception):
-    def __init__(self, what: str, status: int):
-        super().__init__(f"Error fetching {what} ({status})")
+    def __init__(self, what: str, status: int, error_code: str | None = None):
+        super().__init__(f"Error fetching {what} ({status}{f', {error_code}' if error_code else ''})")
         self.status = status
+        self.error_code = error_code
+
+
+async def _epic_error(resp: aiohttp.ClientResponse, what: str) -> EpicError:
+    """Builds the error with Epic's errorCode and logs it; Epic explains most failures there."""
+    try:
+        error_code = (await resp.json(content_type=None)).get("errorCode")
+    except Exception:
+        error_code = None
+    logger.warning("Epic request failed", extra=fields(what=what, status=resp.status, error_code=error_code))
+    return EpicError(what, resp.status, error_code)
 
 
 def _auth(user: EpicUser) -> dict:
@@ -40,7 +55,7 @@ async def query_profile(session: aiohttp.ClientSession, user: EpicUser, profile_
         json={},
     ) as resp:
         if resp.status != 200:
-            raise EpicError(f"{profile_id} profile", resp.status)
+            raise await _epic_error(resp, f"{profile_id} profile")
         data = await resp.json()
         return data.get("profileChanges", [{}])[0].get("profile", {})
 
@@ -48,13 +63,15 @@ async def query_profile(session: aiohttp.ClientSession, user: EpicUser, profile_
 async def get_account_info(session: aiohttp.ClientSession, user: EpicUser) -> dict:
     async with session.get(f"{ACCOUNT_URL}/{user.account_id}", headers=_auth(user)) as resp:
         if resp.status != 200:
-            raise EpicError("account info", resp.status)
+            raise await _epic_error(resp, "account info")
         return await resp.json()
 
 
 async def get_external_auths(session: aiohttp.ClientSession, user: EpicUser) -> list:
     async with session.get(f"{ACCOUNT_URL}/{user.account_id}/externalAuths", headers=_auth(user)) as resp:
         if resp.status != 200:
+            # the summary still works without the linked platforms
+            await _epic_error(resp, "external auths")
             return []
         return await resp.json()
 
@@ -73,7 +90,7 @@ async def get_eos_token(session: aiohttp.ClientSession, user: EpicUser) -> dict:
         },
     ) as resp:
         if resp.status != 200:
-            raise EpicError("EOS token", resp.status)
+            raise await _epic_error(resp, "EOS token")
         return await resp.json()
 
 
@@ -84,7 +101,7 @@ async def get_active_loadouts(session: aiohttp.ClientSession, user: EpicUser, eo
         headers={"Authorization": f"Bearer {eos_token}"},
     ) as resp:
         if resp.status != 200:
-            raise EpicError("locker loadouts", resp.status)
+            raise await _epic_error(resp, "locker loadouts")
         data = await resp.json()
         return data.get("activeLoadoutGroup", {}).get("loadouts", {})
 

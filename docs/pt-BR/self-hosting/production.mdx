@@ -47,6 +47,8 @@ O repositório já tem um `Dockerfile` pronto. Qualquer lugar que construa ou ro
     |---|---|---|---|
     | `API_KEY` | Sim | | Chave que o bot envia no header `X-API-Key` |
     | `CATALOG_REFRESH_SECONDS` | Não | `21600` | Intervalo de recarga do catálogo do fortnite-api.com |
+    | `LOG_LEVEL` | Não | `INFO` | `DEBUG`, `INFO`, `WARNING` ou `ERROR`. `DEBUG` também registra as chamadas a `/health` |
+    | `LOG_FORMAT` | Não | `text` | `text` para linhas `chave=valor`, `json` para um objeto JSON por linha |
 
     <Warning>
       Sem `API_KEY` a API não inicia.
@@ -105,6 +107,24 @@ docker build -t llama-api .
 docker rm -f llama-api
 # rode o mesmo docker run do passo 2
 ```
+
+## Logs
+
+A API escreve os logs no stdout, então eles aparecem no `docker logs` e no visualizador de logs da sua plataforma. Uma linha por requisição, mais os eventos de login e de sessão:
+
+```text
+2026-10-18 08:38:56 INFO    api.sessions  [55da3875054d] Login started session=5dbf3fb5 expires_in=600 active=1
+2026-10-18 08:38:56 INFO    api           [55da3875054d] Request method=POST route=/auth/device status=200 ms=853
+2026-10-18 08:39:40 INFO    api.sessions  [55da3875054d] Login completed session=5dbf3fb5 wait_s=44
+2026-10-18 08:39:41 WARNING api.epic      [a1b2c3d4e5f6] Epic request failed what="athena profile" status=401 error_code=errors.com.epicgames.common.oauth.invalid_token
+2026-10-18 08:40:02 INFO    api.sessions  [bot-123] Session removed session=5dbf3fb5 reason=logout status=completed token_revoked=True active=0
+```
+
+- O valor entre colchetes é o id da requisição. Envie o header `X-Request-ID` para usar o seu (por exemplo, o id da interação do bot); a API devolve ele no header `X-Request-ID` da resposta.
+- `session` é um hash curto do `session_id`, suficiente para seguir um login entre as linhas. Tokens, session ids, emails e nicks nunca vão para o log.
+- As rotas aparecem como modelo (`/auth/{session_id}`), nunca com o id real.
+- `Epic request failed` traz o `error_code` da Epic, que costuma explicar a falha.
+- `Session removed` diz o motivo: `logout`, `idle`, `token_expired` ou `shutdown`, e se a Epic invalidou o token.
 
 ## Não escale horizontalmente
 

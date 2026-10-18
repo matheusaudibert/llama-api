@@ -47,6 +47,8 @@ The repository already has a ready-to-use `Dockerfile`. Anything that builds or 
     |---|---|---|---|
     | `API_KEY` | Yes | | Key the bot sends in the `X-API-Key` header |
     | `CATALOG_REFRESH_SECONDS` | No | `21600` | How often the fortnite-api.com catalog is reloaded |
+    | `LOG_LEVEL` | No | `INFO` | `DEBUG`, `INFO`, `WARNING` or `ERROR`. `DEBUG` also logs the `/health` calls |
+    | `LOG_FORMAT` | No | `text` | `text` for `key=value` lines, `json` for one JSON object per line |
 
     <Warning>
       The API does not start without `API_KEY`.
@@ -105,6 +107,24 @@ docker build -t llama-api .
 docker rm -f llama-api
 # run the same docker run from step 2
 ```
+
+## Logs
+
+The API logs to stdout, so they show up in `docker logs` and in your platform's log viewer. One line per request, plus the login and session events:
+
+```text
+2026-10-18 08:38:56 INFO    api.sessions  [55da3875054d] Login started session=5dbf3fb5 expires_in=600 active=1
+2026-10-18 08:38:56 INFO    api           [55da3875054d] Request method=POST route=/auth/device status=200 ms=853
+2026-10-18 08:39:40 INFO    api.sessions  [55da3875054d] Login completed session=5dbf3fb5 wait_s=44
+2026-10-18 08:39:41 WARNING api.epic      [a1b2c3d4e5f6] Epic request failed what="athena profile" status=401 error_code=errors.com.epicgames.common.oauth.invalid_token
+2026-10-18 08:40:02 INFO    api.sessions  [bot-123] Session removed session=5dbf3fb5 reason=logout status=completed token_revoked=True active=0
+```
+
+- The value in brackets is the request id. Send an `X-Request-ID` header to use your own (for example, your bot's interaction id); the API returns it in the `X-Request-ID` response header.
+- `session` is a short hash of the `session_id`, enough to follow one login across lines. Tokens, session ids, emails and display names are never logged.
+- Routes are logged as templates (`/auth/{session_id}`), never with the real id.
+- `Epic request failed` carries Epic's `error_code`, which usually explains the failure.
+- `Session removed` says why: `logout`, `idle`, `token_expired` or `shutdown`, and whether Epic revoked the token.
 
 ## Do not scale horizontally
 

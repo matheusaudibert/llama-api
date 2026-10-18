@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import re
+import time
 from datetime import datetime, timedelta, timezone
 
 import aiohttp
@@ -12,8 +13,9 @@ from .cosmetic_data import (
     rarity_priority,
     sub_order,
 )
+from .logs import fields
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("api.catalog")
 
 idpattern = re.compile(r"athena(.*?):(.*?)_(.*?)")
 
@@ -61,12 +63,13 @@ class Catalog:
         self.banners: dict = {}
 
     async def refresh(self, session: aiohttp.ClientSession) -> None:
+        started = time.perf_counter()
         async with session.get(COSMETICS_URL, params=CATALOG_PARAMS) as resp:
             if resp.status == 200:
                 data = await resp.json()
                 self.cosmetics = {c["id"].lower(): c for c in data.get("data", [])}
             else:
-                logger.warning(f"Could not load cosmetics catalog ({resp.status})")
+                logger.warning("Could not load the cosmetics catalog", extra=fields(status=resp.status))
 
         # only the names are kept, so the second catalog costs little memory
         async with session.get(COSMETICS_URL, params={"language": PT_LANGUAGE}) as resp:
@@ -74,24 +77,30 @@ class Catalog:
                 data = await resp.json()
                 self.names_pt = {c["id"].lower(): c["name"].strip() for c in data.get("data", []) if c.get("name")}
             else:
-                logger.warning(f"Could not load Portuguese cosmetic names ({resp.status})")
+                logger.warning("Could not load the Portuguese cosmetic names", extra=fields(status=resp.status))
 
         async with session.get(BANNERS_URL) as resp:
             if resp.status == 200:
                 data = await resp.json()
                 self.banners = {b["id"].lower(): b for b in data.get("data", [])}
             else:
-                logger.warning(f"Could not load banners catalog ({resp.status})")
+                logger.warning("Could not load the banners catalog", extra=fields(status=resp.status))
 
-        logger.info(f"Catalog loaded: {len(self.cosmetics)} cosmetics ({len(self.names_pt)} Portuguese names), {len(self.banners)} banners")
+        logger.info("Catalog loaded", extra=fields(
+            cosmetics=len(self.cosmetics),
+            names_pt=len(self.names_pt),
+            banners=len(self.banners),
+            ms=round((time.perf_counter() - started) * 1000),
+        ))
 
     async def refresh_forever(self, session: aiohttp.ClientSession, every_seconds: int) -> None:
         while True:
             await asyncio.sleep(every_seconds)
             try:
                 await self.refresh(session)
-            except Exception as e:
-                logger.error(f"Catalog refresh failed: {e}")
+            except Exception:
+                # the previous catalog stays in memory
+                logger.exception("Catalog refresh failed")
 
     async def get(self, session: aiohttp.ClientSession, cosmetic_id: str) -> dict | None:
         cid_lower = cosmetic_id.lower()
@@ -104,6 +113,7 @@ class Catalog:
                 return None
             data = (await resp.json()).get("data")
         if data:
+            logger.info("Fetched an item missing from the catalog", extra=fields(item=cid_lower))
             self.cosmetics[cid_lower] = data
             async with session.get(f"{COSMETICS_URL}/{cosmetic_id}", params={"language": PT_LANGUAGE}) as resp:
                 if resp.status == 200:

@@ -123,9 +123,10 @@ class EpicGenerator:
         return EpicUser(data=auth_information)
 
 
-async def kill_token(session: aiohttp.ClientSession, access_token: str) -> None:
+async def kill_token(session: aiohttp.ClientSession, access_token: str) -> int:
+    """Revokes the token at Epic. Returns the HTTP status (204 when it worked)."""
     async with session.delete(
         f"{OAUTH_URL}/sessions/kill/{access_token}",
         headers={"Authorization": f"bearer {access_token}"},
-    ):
-        pass
+    ) as resp:
+        return resp.status

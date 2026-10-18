@@ -11,8 +11,9 @@ import aiohttp
 from PIL import Image, ImageDraw, ImageFont, UnidentifiedImageError
 
 from .cosmetics import Catalog, category_of, cosmetic_entry, sort_items
+from .logs import fields
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("api.render")
 
 ASSETS = Path(__file__).parent / "assets"
 FONT_PATH = ASSETS / "font.ttf"
@@ -97,7 +98,7 @@ async def _fetch_icon(session: aiohttp.ClientSession, sem: asyncio.Semaphore, it
                         data = await resp.read()
                         break
             except aiohttp.ClientError as e:
-                logger.warning(f"Could not download icon {url}: {e}")
+                logger.warning("Could not download an icon", extra=fields(item=item["id"], error=repr(e)))
         else:
             return None
 
