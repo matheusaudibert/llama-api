@@ -94,4 +94,7 @@ PT = {
     'The square drawn behind an item of that rarity, as linked in `images.background`. Does not require an API key.': 'O quadrado desenhado atrás de um item dessa raridade, como no link de `images.background`. Não exige API key.',
     'PNG of the rarity background': 'PNG do fundo da raridade',
     'Unknown rarity background': 'Fundo de raridade desconhecido',
+    'Whether the email can be changed right now. Null when Epic did not answer.': 'Se o email pode ser trocado agora. Nulo quando a Epic não respondeu.',
+    'Last email change (ISO 8601).': 'Data da última troca de email (ISO 8601).',
+    'When a locked email can be changed again (ISO 8601). Null when it can be changed now.': 'Quando um email bloqueado poderá ser trocado de novo (ISO 8601). Nulo quando já pode ser trocado.',
 }

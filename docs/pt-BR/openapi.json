@@ -740,6 +740,42 @@
             "title": "Last Display Name Change",
             "description": "Data da última troca de nick (ISO 8601)."
           },
+          "can_change_email": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Can Change Email",
+            "description": "Se o email pode ser trocado agora. Nulo quando a Epic não respondeu."
+          },
+          "last_email_change": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Email Change",
+            "description": "Data da última troca de email (ISO 8601)."
+          },
+          "email_change_available_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email Change Available At",
+            "description": "Quando um email bloqueado poderá ser trocado de novo (ISO 8601). Nulo quando já pode ser trocado."
+          },
           "vbucks": {
             "type": "integer",
             "title": "Vbucks",

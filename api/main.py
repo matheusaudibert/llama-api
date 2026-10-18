@@ -17,6 +17,7 @@ from .epic_data import (
     get_account_stats,
     get_active_loadouts,
     get_banner_ids,
+    get_email_info,
     get_eos_token,
     get_external_auths,
     get_linkable_platforms,
@@ -233,9 +234,10 @@ async def account_summary(session: Session = Depends(logged_session)):
     """Epic account data, V-Bucks, connected platforms and Battle Royale stats."""
     user = session.user
     try:
-        account, external_auths, common_core, athena = await asyncio.gather(
+        account, external_auths, email_info, common_core, athena = await asyncio.gather(
             get_account_info(http, user),
             get_external_auths(http, user),
+            get_email_info(http, user),
             query_profile(http, user, "common_core"),
             query_profile(http, user, "athena"),
         )
@@ -258,6 +260,10 @@ async def account_summary(session: Session = Depends(logged_session)):
         "can_change_display_name": account.get("canUpdateDisplayName", False),
         "display_name_changes": account.get("numberOfDisplayNameChanges", 0),
         "last_display_name_change": account.get("lastDisplayNameChange"),
+        "can_change_email": email_info.get("canUpdateEmail"),
+        "last_email_change": email_info.get("lastEmailUpdate"),
+        # Epic only locks the email for a while after a change; no date when it can be changed now
+        "email_change_available_at": None if email_info.get("canUpdateEmail") else email_info.get("canUpdateNext"),
         "vbucks": get_vbucks(common_core),
         "vbucks_by_platform": get_vbucks_by_platform(common_core),
         **get_purchase_info(common_core),

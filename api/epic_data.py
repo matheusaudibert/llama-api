@@ -107,6 +107,16 @@ async def get_active_loadouts(session: aiohttp.ClientSession, user: EpicUser, eo
         return data.get("activeLoadoutGroup", {}).get("loadouts", {})
 
 
+async def get_email_info(session: aiohttp.ClientSession, user: EpicUser) -> dict:
+    """canUpdateEmail, lastEmailUpdate and canUpdateNext (when a locked email can be changed again)."""
+    async with session.get(f"{ACCOUNT_URL}/{user.account_id}/email", headers=_auth(user)) as resp:
+        if resp.status != 200:
+            # the summary still works without the email change dates
+            await _epic_error(resp, "email info")
+            return {}
+        return await resp.json()
+
+
 def get_vbucks(common_core: dict) -> int:
     return sum(
         item.get("quantity", 0)

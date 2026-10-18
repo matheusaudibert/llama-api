@@ -740,6 +740,42 @@
             "title": "Last Display Name Change",
             "description": "Last display name change (ISO 8601)."
           },
+          "can_change_email": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Can Change Email",
+            "description": "Whether the email can be changed right now. Null when Epic did not answer."
+          },
+          "last_email_change": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Email Change",
+            "description": "Last email change (ISO 8601)."
+          },
+          "email_change_available_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email Change Available At",
+            "description": "When a locked email can be changed again (ISO 8601). Null when it can be changed now."
+          },
           "vbucks": {
             "type": "integer",
             "title": "Vbucks",
