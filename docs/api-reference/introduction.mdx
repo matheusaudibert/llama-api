@@ -32,7 +32,7 @@ Without the header, or with a wrong key, the response is `401`.
 
 1. `POST /auth/device`: starts the login and returns the Epic link.
 2. `GET /auth/{session_id}`: poll until `completed`.
-3. `GET /accounts/{session_id}/summary` and `GET /accounts/{session_id}/locker`: read the data.
+3. `GET /accounts/{session_id}/summary`, `GET /accounts/{session_id}/locker` and `GET /accounts/{session_id}/equipped`: read the data.
 4. `POST /render/{category}`: optional, renders the locker images from the saved items.
 5. `DELETE /auth/{session_id}`: ends the session.
 

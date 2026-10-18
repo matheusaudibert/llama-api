@@ -81,6 +81,33 @@ class Cosmetic(BaseModel):
     in_catalog: bool = Field(description="False when fortnite-api has no data for this item yet.")
 
 
+class EquippedCosmetic(BaseModel):
+    id: str = Field(description="Lowercase cosmetic ID, e.g. cid_028_athena_commando_f.")
+    name: str = Field(description="Item name. Same as `id` when the item is not in the catalog.")
+    rarity: str = Field(description="Common, Uncommon, Rare, Epic, Legendary, Mythic or a series, such as Icon Series.")
+    series: str | None = Field(None, description="Item series, if any.")
+    type: str | None = Field(None, description="Type on fortnite-api, e.g. outfit, backpack, pickaxe, emote, glider.")
+    images: CosmeticImages
+    styles: list[str] = Field(description="Tags of the styles selected on the equipped item.")
+    is_mythic: bool = Field(description="Rare/OG item: on the rare items list and out of the shop for 2 years, or with the original owners' exclusive style.")
+    in_catalog: bool = Field(description="False when fortnite-api has no data for this item yet.")
+
+
+class Equipped(BaseModel):
+    skin: EquippedCosmetic | None = None
+    backpack: EquippedCosmetic | None = None
+    pickaxe: EquippedCosmetic | None = None
+    glider: EquippedCosmetic | None = None
+    contrail: EquippedCosmetic | None = None
+    shoes: EquippedCosmetic | None = None
+    aura: EquippedCosmetic | None = None
+    emotes: list[EquippedCosmetic] = Field(description="Emotes in the emote wheel, in slot order. Empty slots are skipped.")
+    wraps: list[EquippedCosmetic] = Field(description="Wraps, in slot order. Empty slots are skipped.")
+    banner: EquippedCosmetic | None = None
+    lobby_music: EquippedCosmetic | None = None
+    loading_screen: EquippedCosmetic | None = None
+
+
 class LockerCounts(BaseModel):
     skins: int
     backpacks: int

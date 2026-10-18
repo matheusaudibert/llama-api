@@ -1,9 +1,16 @@
+import secrets
+
 import aiohttp
 
 from .epic_auth import EpicUser
 
 ACCOUNT_URL = "https://account-public-service-prod03.ol.epicgames.com/account/api/public/account"
 PROFILE_URL = "https://fortnite-public-service-prod11.ol.epicgames.com/fortnite/api/game/v2/profile"
+EOS_TOKEN_URL = "https://api.epicgames.dev/auth/v1/oauth/token"
+LOCKER_URL = "https://fngw-svc-gc-livefn.ol.epicgames.com/api/locker/v4"
+FORTNITE_DEPLOYMENT = "62a9473a2dca46b29ccf17577fcf42d7"
+# fortnitePCGameClient: EOS Connect only gives Locker Service access to the game's client
+EOS_CLIENT = "ZWM2ODRiOGM2ODdmNDc5ZmFkZWEzY2IyYWQ4M2Y1YzY6ZTFmMzFjMjExZjI4NDEzMTg2MjYyZDM3YTEzZmM4NGQ="
 
 VBUCKS_CATEGORIES = [
     "Currency:MtxPurchased",
@@ -50,6 +57,36 @@ async def get_external_auths(session: aiohttp.ClientSession, user: EpicUser) -> 
         if resp.status != 200:
             return []
         return await resp.json()
+
+
+async def get_eos_token(session: aiohttp.ClientSession, user: EpicUser) -> dict:
+    """Trades the Epic token for an EOS Connect token, the way the game does. Returns access_token and expires_at."""
+    async with session.post(
+        EOS_TOKEN_URL,
+        headers={"Authorization": f"basic {EOS_CLIENT}", "Content-Type": "application/x-www-form-urlencoded"},
+        data={
+            "grant_type": "external_auth",
+            "external_auth_type": "epicgames_access_token",
+            "external_auth_token": user.access_token,
+            "deployment_id": FORTNITE_DEPLOYMENT,
+            "nonce": secrets.token_hex(8),
+        },
+    ) as resp:
+        if resp.status != 200:
+            raise EpicError("EOS token", resp.status)
+        return await resp.json()
+
+
+async def get_active_loadouts(session: aiohttp.ClientSession, user: EpicUser, eos_token: str) -> dict:
+    async with session.get(
+        f"{LOCKER_URL}/{FORTNITE_DEPLOYMENT}/account/{user.account_id}/items",
+        # the gateway only accepts "Bearer" with a capital B
+        headers={"Authorization": f"Bearer {eos_token}"},
+    ) as resp:
+        if resp.status != 200:
+            raise EpicError("locker loadouts", resp.status)
+        data = await resp.json()
+        return data.get("activeLoadoutGroup", {}).get("loadouts", {})
 
 
 def get_vbucks(common_core: dict) -> int:

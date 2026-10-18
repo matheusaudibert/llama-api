@@ -399,6 +399,104 @@
         }
       }
     },
+    "/accounts/{session_id}/equipped": {
+      "get": {
+        "tags": [
+          "Conta"
+        ],
+        "summary": "Itens equipados",
+        "description": "Os itens equipados no visual ativo do jogador: skin, mochila, picareta, asa-delta, emotes, envelopamentos e mais. Os presets salvos não entram.",
+        "operationId": "account_equipped_accounts__session_id__equipped_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta de sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Equipped"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key ausente ou inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sessão não encontrada ou já removida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Login não concluído (pending, expired ou error)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Token da Epic expirou, inicie um novo login",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "A Epic Games retornou um erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro de validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/render/{category}": {
       "post": {
         "tags": [
@@ -856,6 +954,207 @@
           "expires_in"
         ],
         "title": "DeviceLoginResponse"
+      },
+      "Equipped": {
+        "properties": {
+          "skin": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EquippedCosmetic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "backpack": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EquippedCosmetic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pickaxe": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EquippedCosmetic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "glider": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EquippedCosmetic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contrail": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EquippedCosmetic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "shoes": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EquippedCosmetic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "aura": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EquippedCosmetic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "emotes": {
+            "items": {
+              "$ref": "#/components/schemas/EquippedCosmetic"
+            },
+            "type": "array",
+            "title": "Emotes",
+            "description": "Emotes da roda de emotes, na ordem dos espaços. Espaços vazios ficam de fora."
+          },
+          "wraps": {
+            "items": {
+              "$ref": "#/components/schemas/EquippedCosmetic"
+            },
+            "type": "array",
+            "title": "Wraps",
+            "description": "Envelopamentos, na ordem dos espaços. Espaços vazios ficam de fora."
+          },
+          "banner": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EquippedCosmetic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lobby_music": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EquippedCosmetic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "loading_screen": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EquippedCosmetic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "emotes",
+          "wraps"
+        ],
+        "title": "Equipped"
+      },
+      "EquippedCosmetic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "ID do cosmético em minúsculas, ex: cid_028_athena_commando_f."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Nome do item. Igual ao `id` quando o item não está no catálogo."
+          },
+          "rarity": {
+            "type": "string",
+            "title": "Rarity",
+            "description": "Common, Uncommon, Rare, Epic, Legendary, Mythic ou uma série, como Icon Series."
+          },
+          "series": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Series",
+            "description": "Série do item, quando houver."
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type",
+            "description": "Tipo no fortnite-api, ex: outfit, backpack, pickaxe, emote, glider."
+          },
+          "images": {
+            "$ref": "#/components/schemas/CosmeticImages"
+          },
+          "styles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Styles",
+            "description": "Tags dos estilos escolhidos no item equipado."
+          },
+          "is_mythic": {
+            "type": "boolean",
+            "title": "Is Mythic",
+            "description": "Item raro/OG: de uma lista de raros que não volta à loja há 2 anos, ou com o estilo exclusivo dos donos originais."
+          },
+          "in_catalog": {
+            "type": "boolean",
+            "title": "In Catalog",
+            "description": "False quando o fortnite-api ainda não tem dados deste item."
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "rarity",
+          "images",
+          "styles",
+          "is_mythic",
+          "in_catalog"
+        ],
+        "title": "EquippedCosmetic"
       },
       "ErrorResponse": {
         "properties": {

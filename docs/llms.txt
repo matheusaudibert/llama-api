@@ -6,7 +6,7 @@ Important notes:
 
 - Authentication: every endpoint except `GET /health` needs the header `X-API-Key: <key>`, the `API_KEY` environment variable of the instance. Missing or wrong key returns `401`.
 - Base URL: the domain where the instance runs, e.g. `https://api.yourdomain.com`, or `https://llamaapi.audibert.dev` for the hosted one.
-- Typical flow: `POST /auth/device` returns `session_id` and `verification_url`; show the URL to the player; poll `GET /auth/{session_id}` every ~3 s until `status` leaves `pending`; on `completed`, call `GET /accounts/{session_id}/summary` and `GET /accounts/{session_id}/locker`; then `DELETE /auth/{session_id}` to revoke the Epic token.
+- Typical flow: `POST /auth/device` returns `session_id` and `verification_url`; show the URL to the player; poll `GET /auth/{session_id}` every ~3 s until `status` leaves `pending`; on `completed`, call `GET /accounts/{session_id}/summary`, `GET /accounts/{session_id}/locker` and, if needed, `GET /accounts/{session_id}/equipped`; then `DELETE /auth/{session_id}` to revoke the Epic token.
 - Login states: `pending`, `completed`, `expired` (link not approved within ~10 min, `expires_in` seconds), `error` (see the `error` field).
 - Session lifetime: valid while it was used in the last 30 minutes and the Epic token (~2 h) has not expired. After that, calls return `404` (session removed) or `410` (token expired) and the player must log in again.
 - Errors always have the shape `{ "detail": "..." }`. `409` means the login is not `completed` yet; `422` means an invalid parameter, or no item of the category in `POST /render/{category}`; `502` means Epic Games returned an error.
@@ -26,6 +26,7 @@ Important notes:
 - [DELETE /auth/{session_id}](/api-reference/endpoints/authentication/end-session): Revokes the Epic token and deletes the session. Returns `204`.
 - [GET /accounts/{session_id}/summary](/api-reference/endpoints/account/account-summary): Account data: `email`, `email_verified`, `name`, `last_name`, `country`, `tfa_enabled`, `minor_verified`, `last_login`, display name changes (`can_change_display_name`, `display_name_changes`, `last_display_name_change`), `vbucks` and `vbucks_by_platform`, `mtx_platform`, `refund_credits`, `refunds_used`, `external_auths` (linked platforms), `linkable_platforms` (consoles not linked yet), `account_level`, `lifetime_wins`, `total_wins`, `total_matches`, `last_match_end`, `current_season` and `past_seasons` (season, level, battle pass, wins).
 - [GET /accounts/{session_id}/locker](/api-reference/endpoints/account/locker): Every cosmetic, split into `skins`, `backpacks`, `pickaxes`, `emotes`, `gliders`, `wraps`, `sprays`, `others` and `banners`, plus `counts` per category.
+- [GET /accounts/{session_id}/equipped](/api-reference/endpoints/account/equipped-items): Items equipped right now in the active loadout (saved presets are not included): `skin`, `backpack`, `pickaxe`, `glider`, `contrail`, `shoes`, `aura`, `banner`, `lobby_music` and `loading_screen` (each an item or `null`), plus `emotes` and `wraps` (lists in slot order). Items have the locker fields plus `styles`, the style tags selected on them.
 - [POST /render/{category}](/api-reference/endpoints/images/locker-image): PNG image of one locker category, in skin checker style: header with category, count, Epic Games logo, nickname and date, and one card per item with the rarity background and name. No session needed.
 - [GET /health](/api-reference/endpoints/health/health-check): Healthcheck without API key. Returns `status`, `cosmetics_loaded` and `active_sessions`.
 
@@ -34,7 +35,7 @@ Important notes:
 - [Introduction](/guides/introduction): What the API does, the login sequence and the self-hosted vs hosted options.
 - [Quickstart](/quickstart): Run the API locally with Python or Docker, generate an API key and do the first login with curl.
 - [Login flow](/guides/login-flow): Session states, polling, session lifetime and security of tokens and `session_id`.
-- [Locker and cosmetics](/guides/locker): Categories, item format, rarity and sorting, mythic and OG rules, the render route and how new items are handled.
+- [Locker and cosmetics](/guides/locker): Categories, item format, rarity and sorting, mythic and OG rules, equipped items, the render route and how new items are handled.
 - [Errors](/guides/errors): Every HTTP status the API returns and how a bot should handle it.
 - [discord.js example](/guides/discord-bot): A complete `/checker` slash command in TypeScript: typed API client, login button, polling, summary embed and logout.
 

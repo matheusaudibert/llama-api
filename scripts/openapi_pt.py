@@ -82,4 +82,9 @@ PT = {
     'Whether the display name can be changed right now.': 'Se o nick pode ser trocado agora.',
     'How many times the display name was changed.': 'Quantas vezes o nick já foi trocado.',
     'Last display name change (ISO 8601).': 'Data da última troca de nick (ISO 8601).',
+    'Equipped items': 'Itens equipados',
+    "The items equipped in the player's active loadout: skin, backpack, pickaxe, glider, emotes, wraps and more. Saved presets are not included.": 'Os itens equipados no visual ativo do jogador: skin, mochila, picareta, asa-delta, emotes, envelopamentos e mais. Os presets salvos não entram.',
+    'Tags of the styles selected on the equipped item.': 'Tags dos estilos escolhidos no item equipado.',
+    'Emotes in the emote wheel, in slot order. Empty slots are skipped.': 'Emotes da roda de emotes, na ordem dos espaços. Espaços vazios ficam de fora.',
+    'Wraps, in slot order. Empty slots are skipped.': 'Envelopamentos, na ordem dos espaços. Espaços vazios ficam de fora.',
 }

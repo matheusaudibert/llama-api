@@ -15,6 +15,7 @@ HTTP API to log in to Epic Games accounts (device code flow) and read the Fortni
 | `DELETE` | `/auth/{session_id}` | Ends the session and revokes the Epic token |
 | `GET` | `/accounts/{session_id}/summary` | Account data, V-Bucks, platforms and stats |
 | `GET` | `/accounts/{session_id}/locker` | Every cosmetic, by category and sorted by rarity |
+| `GET` | `/accounts/{session_id}/equipped` | Items equipped in the active loadout (skin, pickaxe, emotes…) |
 | `POST` | `/render/{category}` | Locker PNG per category (`skins`, `backpacks`, `pickaxes`, `gliders`, `emotes`, `mythics`) |
 | `GET` | `/health` | Healthcheck (no API key) |
 

@@ -7,12 +7,14 @@ import aiohttp
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Response, Security
 from fastapi.security import APIKeyHeader
 
-from .cosmetics import Catalog, build_locker
+from .cosmetics import Catalog, build_equipped, build_locker
 from .epic_data import (
     EpicError,
     get_account_info,
     get_account_stats,
+    get_active_loadouts,
     get_banner_ids,
+    get_eos_token,
     get_external_auths,
     get_linkable_platforms,
     get_purchase_info,
@@ -23,6 +25,7 @@ from .epic_data import (
 from .models import (
     AccountSummary,
     DeviceLoginResponse,
+    Equipped,
     ErrorResponse,
     Health,
     Locker,
@@ -226,6 +229,25 @@ async def account_locker(session: Session = Depends(logged_session)):
         "counts": {k: len(v) for k, v in locker.items()},
         **locker,
     }
+
+
+@router.get(
+    "/accounts/{session_id}/equipped",
+    response_model=Equipped,
+    tags=["Account"],
+    summary="Equipped items",
+    responses=ACCOUNT_ERRORS,
+)
+async def account_equipped(session: Session = Depends(logged_session)):
+    """The items equipped in the player's active loadout: skin, backpack, pickaxe, glider, emotes, wraps and more. Saved presets are not included."""
+    try:
+        if not session.eos_token_valid():
+            eos = await get_eos_token(http, session.user)
+            session.eos_token, session.eos_expires_at = eos["access_token"], eos["expires_at"]
+        loadouts = await get_active_loadouts(http, session.user, session.eos_token)
+    except EpicError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+    return await build_equipped(http, catalog, loadouts)
 
 
 @router.post(

@@ -189,27 +189,90 @@ async def build_locker(session: aiohttp.ClientSession, catalog: Catalog, athena:
         locker[category_of(cid)].append(cosmetic_entry(cid, styles, info))
 
     for bn in banner_ids:
-        info = catalog.banners.get(bn)
-        if not info or not info.get("images", {}).get("icon"):
-            continue
-        cid = f"banner_{bn}"
-        locker["banners"].append({
-            "id": cid,
-            "name": info.get("devName") or cid,
-            "rarity": "Mythic" if cid in MYTHIC_SET else "Uncommon",
-            "series": None,
-            "type": "banner",
-            "images": {
-                "icon": info["images"]["icon"],
-                "small_icon": info["images"].get("smallIcon"),
-                "featured": None,
-            },
-            "owned_styles": [],
-            "is_exclusive": False,
-            "is_mythic": cid in MYTHIC_SET,
-            "in_catalog": True,
-        })
+        entry = banner_entry(catalog, bn)
+        if entry:
+            locker["banners"].append(entry)
 
     for items in locker.values():
         sort_items(items)
     return locker
+
+
+def banner_entry(catalog: Catalog, banner_id: str) -> dict | None:
+    info = catalog.banners.get(banner_id)
+    if not info or not info.get("images", {}).get("icon"):
+        return None
+    cid = f"banner_{banner_id}"
+    return {
+        "id": cid,
+        "name": info.get("devName") or cid,
+        "rarity": "Mythic" if cid in MYTHIC_SET else "Uncommon",
+        "series": None,
+        "type": "banner",
+        "images": {
+            "icon": info["images"]["icon"],
+            "small_icon": info["images"].get("smallIcon"),
+            "featured": None,
+        },
+        "owned_styles": [],
+        "is_exclusive": False,
+        "is_mythic": cid in MYTHIC_SET,
+        "in_catalog": True,
+    }
+
+
+# Locker Service slot -> /equipped field
+EQUIPPED_SLOTS = {
+    "LoadoutSlot_Character": "skin",
+    "LoadoutSlot_Backpack": "backpack",
+    "LoadoutSlot_Pickaxe": "pickaxe",
+    "LoadoutSlot_Glider": "glider",
+    "LoadoutSlot_Contrails": "contrail",
+    "LoadoutSlot_Shoes": "shoes",
+    "LoadoutSlot_Aura": "aura",
+    "LoadoutSlot_Banner_Icon": "banner",
+    "LoadoutSlot_LobbyMusic": "lobby_music",
+    "LoadoutSlot_LoadingScreen": "loading_screen",
+}
+# numbered slots (LoadoutSlot_Emote_0, LoadoutSlot_Wrap_3…) become lists
+EQUIPPED_LISTS = {"LoadoutSlot_Emote_": "emotes", "LoadoutSlot_Wrap_": "wraps"}
+
+
+def _equipped_field(slot: str) -> str | None:
+    for prefix, key in EQUIPPED_LISTS.items():
+        if slot.startswith(prefix):
+            return key
+    return EQUIPPED_SLOTS.get(slot)
+
+
+async def build_equipped(session: aiohttp.ClientSession, catalog: Catalog, loadouts: dict) -> dict:
+    """Turns the Locker Service active loadouts into {field: item} with catalog data."""
+    slots = []
+    for loadout in loadouts.values():
+        for slot in loadout.get("loadoutSlots", []):
+            field = _equipped_field(slot.get("slotTemplate", "").split(":")[-1])
+            item_id = slot.get("equippedItemId")
+            if not field or not item_id:
+                continue
+            styles = [
+                c["variantTag"] for c in slot.get("itemCustomizations", [])
+                if c.get("variantTag") and c.get("channelTag") != "ProfileLoadout"
+            ]
+            slots.append((field, item_id.split(":")[-1].lower(), styles))
+
+    cosmetic_slots = [s for s in slots if s[0] != "banner"]
+    infos = await asyncio.gather(*[catalog.get(session, cid) for _, cid, _ in cosmetic_slots])
+
+    equipped: dict = {key: None for key in EQUIPPED_SLOTS.values()}
+    equipped.update({key: [] for key in EQUIPPED_LISTS.values()})
+    for (field, cid, styles), info in zip(cosmetic_slots, infos):
+        entry = {**cosmetic_entry(cid, styles, info), "styles": styles}
+        if field in EQUIPPED_LISTS.values():
+            equipped[field].append(entry)
+        else:
+            equipped[field] = entry
+    for field, cid, _ in slots:
+        if field == "banner":
+            entry = banner_entry(catalog, cid)
+            equipped["banner"] = entry and {**entry, "styles": []}
+    return equipped

@@ -112,6 +112,8 @@ class EpicGenerator:
             data={
                 "grant_type": "exchange_code",
                 "exchange_code": exchange["code"],
+                # a JWT (eg1) token: EOS Connect, used by /equipped, refuses opaque tokens
+                "token_type": "eg1",
             },
         ) as request:
             auth_information = await request.json()

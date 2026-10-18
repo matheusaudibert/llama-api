@@ -3,7 +3,7 @@ import logging
 import secrets
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import aiohttp
 
@@ -24,12 +24,20 @@ class Session:
     error: str | None = None
     last_used: float = field(default_factory=time.monotonic)
     task: asyncio.Task | None = None
+    eos_token: str | None = None
+    eos_expires_at: str | None = None
 
     def token_expired(self) -> bool:
         if not self.user or not self.user.expires_at:
             return False
         expires_at = datetime.fromisoformat(self.user.expires_at.replace("Z", "+00:00"))
         return expires_at <= datetime.now(timezone.utc)
+
+    def eos_token_valid(self) -> bool:
+        if not self.eos_token or not self.eos_expires_at:
+            return False
+        expires_at = datetime.fromisoformat(self.eos_expires_at.replace("Z", "+00:00"))
+        return expires_at - timedelta(minutes=1) > datetime.now(timezone.utc)
 
 
 class SessionStore:

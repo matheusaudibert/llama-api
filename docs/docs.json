@@ -40,6 +40,7 @@
                   "DELETE /auth/{session_id}",
                   "GET /accounts/{session_id}/summary",
                   "GET /accounts/{session_id}/locker",
+                  "GET /accounts/{session_id}/equipped",
                   "POST /render/{category}",
                   "GET /health"
                 ]
@@ -96,6 +97,7 @@
                   "DELETE /auth/{session_id}",
                   "GET /accounts/{session_id}/summary",
                   "GET /accounts/{session_id}/locker",
+                  "GET /accounts/{session_id}/equipped",
                   "POST /render/{category}",
                   "GET /health"
                 ]

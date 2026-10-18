@@ -74,6 +74,31 @@ Every list is already sorted:
 
 `is_exclusive` flags a small group of very rare items (Renegade Raider, Aerial Assault Trooper, Ghoul Trooper, Skull Trooper, Omega, Fishstick and The Paradigm), useful for a special highlight.
 
+## Equipped items
+
+`GET /accounts/{session_id}/equipped` returns what the player has equipped right now, in the active loadout. Saved presets are not included.
+
+```json
+{
+  "skin": { "id": "character_fastrabbit", "name": "Dueling Dragons Jackie", "rarity": "Epic", "styles": [], "...": "..." },
+  "backpack": null,
+  "pickaxe": { "id": "pickaxe_saltybrim_pin", "name": "Sonic Ring", "...": "..." },
+  "glider": { "...": "..." },
+  "contrail": { "...": "..." },
+  "shoes": null,
+  "aura": { "...": "..." },
+  "emotes": [{ "id": "eid_fruitfire", "name": "Lil' Station Wagon", "styles": ["Stage9"], "...": "..." }],
+  "wraps": [{ "...": "..." }],
+  "banner": { "...": "..." },
+  "lobby_music": null,
+  "loading_screen": null
+}
+```
+
+- Each item has the same `name`, `rarity`, `images` and `is_mythic` as in the locker, plus `styles`: the style tags selected on that item. An equipped OG style (Renegade Raider `Mat3`…) makes the item mythic, with the `OG …` name and image.
+- An empty slot is `null`. `emotes` and `wraps` are lists in slot order, without the empty slots.
+- The data comes from the Fortnite Locker Service, so it changes as soon as the player changes the loadout in the game.
+
 ## Images
 
 The URLs in `images` point straight to the fortnite-api.com CDN.
