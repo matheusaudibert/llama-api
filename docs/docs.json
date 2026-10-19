@@ -19,6 +19,14 @@
       "chatgpt"
     ]
   },
+  "navbar": {
+    "links": [
+      {
+        "label": "Demo",
+        "href": "https://llamachecker.audibert.dev/"
+      }
+    ]
+  },
   "navigation": {
     "languages": [
       {
