@@ -41,6 +41,8 @@ icon: "shirt"
   "owned_styles": ["Mat1", "Mat2"],
   "is_exclusive": true,
   "is_mythic": true,
+  "from_shop": true,
+  "estimated_price": 1200,
   "in_catalog": true
 }
 ```
@@ -77,6 +79,33 @@ Cada lista já vem ordenada:
 3. Por nome.
 
 `is_exclusive` marca um grupo pequeno de itens muito raros (Renegade Raider, Aerial Assault Trooper, Ghoul Trooper, Skull Trooper, Omega, Fishstick e The Paradigm), útil para um destaque especial.
+
+## Itens da loja e valor estimado
+
+`from_shop` é `true` quando o item já foi vendido na loja de itens pelo menos uma vez, pelo histórico da loja do fortnite-api.com. Itens de passe de batalha, pacotes, promoções e eventos são `false`.
+
+`estimated_price` é o preço estimado na loja, em V-Bucks, só para itens da loja. O fortnite-api não guarda histórico de preços, então ele vem do preço de costume da loja para o tipo e a raridade do item. Promoções, pacotes e preços de colaborações não entram na conta: trate como uma estimativa, não como o valor que o jogador pagou.
+
+| Tipo | Comum / Incomum | Raro | Épico | Lendário | Série |
+|---|---|---|---|---|---|
+| Traje | 800 | 1200 | 1500 | 2000 | 1500 |
+| Acessório para as costas | 200 | 300 | 400 | 500 | 400 |
+| Ferramenta de coleta | 500 | 800 | 1200 | 1500 | 800 |
+| Asa-delta | 500 | 800 | 1200 | 1500 | 1200 |
+| Gesto | 200 | 500 | 800 | 800 | 500 |
+| Envelopamento / rastro | 300 | 500 | 700 | 700 | 500 |
+| Música | 200 | 200 | 200 | 200 | 200 |
+
+Os outros tipos (sprays, telas de carregamento, banners…) têm `estimated_price: null`. Itens míticos são precificados pela raridade original.
+
+A resposta do locker também traz o resumo `shop`:
+
+```json
+"shop": {
+  "counts": { "skins": 21, "backpacks": 17, "pickaxes": 14, "emotes": 18, "gliders": 2, "wraps": 8, "sprays": 1, "others": 11, "banners": 0 },
+  "estimated_vbucks": 55000
+}
+```
 
 ## Itens equipados
 
@@ -121,7 +150,7 @@ Os fundos são servidos pela própria API em `GET /backgrounds/{name}.png`, sem 
   A URL do `background` usa o host pelo qual a requisição chegou. Atrás de um proxy que muda o host, defina a variável de ambiente `PUBLIC_URL` (por exemplo `https://api.seudominio.com`).
 </Note>
 
-Para uma imagem pronta do locker, use `POST /render/{category}`, com `category` igual a `skins`, `backpacks`, `pickaxes`, `gliders`, `emotes` ou `mythics`. A `mythics` junta os itens míticos de todas essas categorias, com os trajes primeiro. Ela devolve um PNG com um cabeçalho (ícone da categoria, "LOCKER" ou "ARMÁRIO", nome da categoria com a quantidade, logo da Epic Games, nick e data) e uma grade com um card por item, com o fundo da raridade e o nome.
+Para uma imagem pronta do locker, use `POST /render/{category}`, com `category` igual a `skins`, `backpacks`, `pickaxes`, `gliders`, `emotes` ou `mythics`. A `mythics` junta os itens míticos de todas essas categorias, com os trajes primeiro. Ela devolve um PNG com um cabeçalho (ícone da categoria, "LOCKER" ou "ARMÁRIO", nome da categoria com a quantidade e quantos são da loja, logo da Epic Games, nick e data) e uma grade com um card por item, com o fundo da raridade e o nome.
 
 A rota não usa sessão. Envie os itens que você salvou do `/locker`: dá para gerar e regerar a imagem a qualquer momento, sem um novo login.
 

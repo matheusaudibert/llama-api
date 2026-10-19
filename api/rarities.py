@@ -3,29 +3,29 @@ from pathlib import Path
 
 SQUARES_DIR = Path(__file__).parent / "assets" / "squares"
 
-# lowercase rarity from fortnite-api -> square file in assets/squares
+# lowercase rarity from fortnite-api -> square file in assets/squares (also its public name in /backgrounds)
 SQUARES = {
-    "common": "commun",
-    "uncommon": "uncommun",
+    "common": "common",
+    "uncommon": "uncommon",
     "rare": "rare",
-    "epic": "epico",
+    "epic": "epic",
     "legendary": "legendary",
-    "mythic": "mitico",
-    "icon series": "idolo",
-    "dark series": "dark",
-    "star wars series": "starwars",
-    "marvel series": "marvel",
-    "dc series": "dc",
-    "gaming legends series": "serie",
-    "shadow series": "shadow",
-    "slurp series": "slurp",
-    "lava series": "lava",
-    "frozen series": "hielo",
-    "crew series": "crew",
+    "mythic": "mythic",
+    "icon series": "icon-series",
+    "dark series": "dark-series",
+    "star wars series": "star-wars-series",
+    "marvel series": "marvel-series",
+    "dc series": "dc-series",
+    "gaming legends series": "series",
+    "shadow series": "shadow-series",
+    "slurp series": "slurp-series",
+    "lava series": "lava-series",
+    "frozen series": "frozen-series",
+    "crew series": "crew-series",
 }
 
 # public names, as in /backgrounds/icon-series.png; "series" covers series without their own square
-BACKGROUNDS = {rarity.replace(" ", "-"): square for rarity, square in SQUARES.items()} | {"series": "serie"}
+BACKGROUNDS = {rarity.replace(" ", "-"): square for rarity, square in SQUARES.items()} | {"series": "series"}
 
 
 def background_key(rarity: str, series: str | None) -> str:

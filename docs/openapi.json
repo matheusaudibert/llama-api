@@ -961,6 +961,24 @@
             "title": "Is Mythic",
             "description": "Rare/OG item: on the rare items list and out of the shop for 2 years, or with the original owners' exclusive style."
           },
+          "from_shop": {
+            "type": "boolean",
+            "title": "From Shop",
+            "description": "Sold in the item shop at least once. Battle pass, packs and promotional items are not.",
+            "default": false
+          },
+          "estimated_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Price",
+            "description": "Estimated item shop price in V-Bucks, from the usual price for its type and rarity. Null when the item is not from the shop or its type is not sold alone."
+          },
           "in_catalog": {
             "type": "boolean",
             "title": "In Catalog",
@@ -1246,6 +1264,24 @@
             "title": "Is Mythic",
             "description": "Rare/OG item: on the rare items list and out of the shop for 2 years, or with the original owners' exclusive style."
           },
+          "from_shop": {
+            "type": "boolean",
+            "title": "From Shop",
+            "description": "Sold in the item shop at least once. Battle pass, packs and promotional items are not.",
+            "default": false
+          },
+          "estimated_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Price",
+            "description": "Estimated item shop price in V-Bucks, from the usual price for its type and rarity. Null when the item is not from the shop or its type is not sold alone."
+          },
           "in_catalog": {
             "type": "boolean",
             "title": "In Catalog",
@@ -1365,6 +1401,10 @@
             "$ref": "#/components/schemas/LockerCounts",
             "description": "Item count per category."
           },
+          "shop": {
+            "$ref": "#/components/schemas/ShopSummary",
+            "description": "Items from the item shop and their estimated value."
+          },
           "skins": {
             "items": {
               "$ref": "#/components/schemas/Cosmetic"
@@ -1432,6 +1472,7 @@
         "type": "object",
         "required": [
           "counts",
+          "shop",
           "skins",
           "backpacks",
           "pickaxes",
@@ -1665,6 +1706,25 @@
           "items"
         ],
         "title": "RenderRequest"
+      },
+      "ShopSummary": {
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/LockerCounts",
+            "description": "Items sold in the item shop, per category."
+          },
+          "estimated_vbucks": {
+            "type": "integer",
+            "title": "Estimated Vbucks",
+            "description": "Sum of `estimated_price` over every shop item: a rough value of the locker, not what was paid."
+          }
+        },
+        "type": "object",
+        "required": [
+          "counts",
+          "estimated_vbucks"
+        ],
+        "title": "ShopSummary"
       },
       "ValidationError": {
         "properties": {

@@ -83,6 +83,8 @@ class Cosmetic(BaseModel):
     owned_styles: list[str] = Field(description="Tags of the styles the player unlocked.")
     is_exclusive: bool = Field(description="Part of the exclusive items list (Renegade Raider, Ghoul Trooper…).")
     is_mythic: bool = Field(description="Rare/OG item: on the rare items list and out of the shop for 2 years, or with the original owners' exclusive style.")
+    from_shop: bool = Field(False, description="Sold in the item shop at least once. Battle pass, packs and promotional items are not.")
+    estimated_price: int | None = Field(None, description="Estimated item shop price in V-Bucks, from the usual price for its type and rarity. Null when the item is not from the shop or its type is not sold alone.")
     in_catalog: bool = Field(description="False when fortnite-api has no data for this item yet.")
 
 
@@ -96,6 +98,8 @@ class EquippedCosmetic(BaseModel):
     images: CosmeticImages
     styles: list[str] = Field(description="Tags of the styles selected on the equipped item.")
     is_mythic: bool = Field(description="Rare/OG item: on the rare items list and out of the shop for 2 years, or with the original owners' exclusive style.")
+    from_shop: bool = Field(False, description="Sold in the item shop at least once. Battle pass, packs and promotional items are not.")
+    estimated_price: int | None = Field(None, description="Estimated item shop price in V-Bucks, from the usual price for its type and rarity. Null when the item is not from the shop or its type is not sold alone.")
     in_catalog: bool = Field(description="False when fortnite-api has no data for this item yet.")
 
 
@@ -126,8 +130,14 @@ class LockerCounts(BaseModel):
     banners: int
 
 
+class ShopSummary(BaseModel):
+    counts: LockerCounts = Field(description="Items sold in the item shop, per category.")
+    estimated_vbucks: int = Field(description="Sum of `estimated_price` over every shop item: a rough value of the locker, not what was paid.")
+
+
 class Locker(BaseModel):
     counts: LockerCounts = Field(description="Item count per category.")
+    shop: ShopSummary = Field(description="Items from the item shop and their estimated value.")
     skins: list[Cosmetic]
     backpacks: list[Cosmetic]
     pickaxes: list[Cosmetic]

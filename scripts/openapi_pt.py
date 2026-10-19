@@ -97,4 +97,9 @@ PT = {
     'Whether the email can be changed right now. Null when Epic did not answer.': 'Se o email pode ser trocado agora. Nulo quando a Epic não respondeu.',
     'Last email change (ISO 8601).': 'Data da última troca de email (ISO 8601).',
     'When a locked email can be changed again (ISO 8601). Null when it can be changed now.': 'Quando um email bloqueado poderá ser trocado de novo (ISO 8601). Nulo quando já pode ser trocado.',
+    'Sold in the item shop at least once. Battle pass, packs and promotional items are not.': 'Vendido na loja de itens pelo menos uma vez. Itens de passe de batalha, pacotes e promoções não são.',
+    'Estimated item shop price in V-Bucks, from the usual price for its type and rarity. Null when the item is not from the shop or its type is not sold alone.': 'Preço estimado na loja de itens, em V-Bucks, pelo preço de costume do tipo e da raridade. Nulo quando o item não é da loja ou o tipo não é vendido sozinho.',
+    'Items sold in the item shop, per category.': 'Itens vendidos na loja de itens, por categoria.',
+    'Sum of `estimated_price` over every shop item: a rough value of the locker, not what was paid.': 'Soma do `estimated_price` de todos os itens da loja: um valor aproximado do armário, não o que foi pago.',
+    'Items from the item shop and their estimated value.': 'Itens da loja de itens e o valor estimado deles.',
 }

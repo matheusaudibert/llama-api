@@ -305,6 +305,10 @@ async def account_locker(request: Request, session: Session = Depends(logged_ses
             absolute_background(item, base)
     return {
         "counts": {k: len(v) for k, v in locker.items()},
+        "shop": {
+            "counts": {k: sum(i["from_shop"] for i in v) for k, v in locker.items()},
+            "estimated_vbucks": sum(i["estimated_price"] or 0 for v in locker.values() for i in v),
+        },
         **locker,
     }
 

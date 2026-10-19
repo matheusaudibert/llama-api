@@ -14,6 +14,7 @@ from .cosmetic_data import (
     sub_order,
 )
 from .logs import fields
+from .prices import estimated_price
 from .rarities import background_path
 
 logger = logging.getLogger("api.catalog")
@@ -188,13 +189,16 @@ def cosmetic_entry(cid: str, styles: list, info: dict | None, name_pt: str | Non
         rarity = "Mythic"
     images = info.get("images", {})
     series = (info.get("series") or {}).get("value")
+    item_type = info.get("type", {}).get("value")
+    # sold in the item shop at least once; battle pass, packs and promotions have no shop history
+    from_shop = bool(info.get("shopHistory"))
     return {
         "id": cid,
         "name": og[1] if og else name,
         "name_pt": og[2].format(name_pt) if og else name_pt,
         "rarity": rarity,
         "series": series,
-        "type": info.get("type", {}).get("value"),
+        "type": item_type,
         "images": {
             "icon": (og and _style_image(info, og[0])) or images.get("icon") or f"https://fortnite-api.com/images/cosmetics/br/{cid}/icon.png",
             "small_icon": images.get("smallIcon") or f"https://fortnite-api.com/images/cosmetics/br/{cid}/smallicon.png",
@@ -204,6 +208,8 @@ def cosmetic_entry(cid: str, styles: list, info: dict | None, name_pt: str | Non
         "owned_styles": styles,
         "is_exclusive": cid in EXCLUSIVE_SET,
         "is_mythic": is_mythic,
+        "from_shop": from_shop,
+        "estimated_price": estimated_price(item_type, info.get("rarity", {}).get("value")) if from_shop else None,
         "in_catalog": bool(info),
     }
 
@@ -252,6 +258,8 @@ def banner_entry(catalog: Catalog, banner_id: str) -> dict | None:
         "owned_styles": [],
         "is_exclusive": False,
         "is_mythic": cid in MYTHIC_SET,
+        "from_shop": False,
+        "estimated_price": None,
         "in_catalog": True,
     }
 

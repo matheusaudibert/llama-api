@@ -41,6 +41,8 @@ icon: "shirt"
   "owned_styles": ["Mat1", "Mat2"],
   "is_exclusive": true,
   "is_mythic": true,
+  "from_shop": true,
+  "estimated_price": 1200,
   "in_catalog": true
 }
 ```
@@ -77,6 +79,33 @@ Every list is already sorted:
 3. By name.
 
 `is_exclusive` flags a small group of very rare items (Renegade Raider, Aerial Assault Trooper, Ghoul Trooper, Skull Trooper, Omega, Fishstick and The Paradigm), useful for a special highlight.
+
+## Shop items and estimated value
+
+`from_shop` is `true` when the item was sold in the item shop at least once, from the fortnite-api.com shop history. Battle pass, pack, promotional and event items are `false`.
+
+`estimated_price` is the estimated shop price in V-Bucks, only for shop items. fortnite-api has no price history, so it comes from the usual shop price for the item type and rarity. Sales, bundles and collab prices are not taken into account, so treat it as an estimate, not what the player paid.
+
+| Type | Common / Uncommon | Rare | Epic | Legendary | Series |
+|---|---|---|---|---|---|
+| Outfit | 800 | 1200 | 1500 | 2000 | 1500 |
+| Back bling | 200 | 300 | 400 | 500 | 400 |
+| Pickaxe | 500 | 800 | 1200 | 1500 | 800 |
+| Glider | 500 | 800 | 1200 | 1500 | 1200 |
+| Emote | 200 | 500 | 800 | 800 | 500 |
+| Wrap / contrail | 300 | 500 | 700 | 700 | 500 |
+| Music | 200 | 200 | 200 | 200 | 200 |
+
+Other types (sprays, loading screens, banners…) have `estimated_price: null`. Mythic items are priced by their original rarity.
+
+The locker response also has a `shop` summary:
+
+```json
+"shop": {
+  "counts": { "skins": 21, "backpacks": 17, "pickaxes": 14, "emotes": 18, "gliders": 2, "wraps": 8, "sprays": 1, "others": 11, "banners": 0 },
+  "estimated_vbucks": 55000
+}
+```
 
 ## Equipped items
 
@@ -121,7 +150,7 @@ The backgrounds are served by the API itself at `GET /backgrounds/{name}.png`, w
   The `background` URL uses the host the request came in on. Behind a proxy that changes the host, set the `PUBLIC_URL` environment variable (for example `https://api.yourdomain.com`).
 </Note>
 
-For a ready-made locker image, use `POST /render/{category}`, with `category` set to `skins`, `backpacks`, `pickaxes`, `gliders`, `emotes` or `mythics`. `mythics` gathers the mythic items of all those categories, outfits first. It returns a PNG with a header (category icon, "LOCKER" or "ARMÁRIO", category name with the count, Epic Games logo, nickname and date) and a grid with one card per item, with the rarity background and the name.
+For a ready-made locker image, use `POST /render/{category}`, with `category` set to `skins`, `backpacks`, `pickaxes`, `gliders`, `emotes` or `mythics`. `mythics` gathers the mythic items of all those categories, outfits first. It returns a PNG with a header (category icon, "LOCKER" or "ARMÁRIO", category name with the count and how many are from the shop, Epic Games logo, nickname and date) and a grid with one card per item, with the rarity background and the name.
 
 The route does not use a session. Send the items you saved from `/locker`: you can render the image again at any time, without a new login.
 

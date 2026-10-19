@@ -26,6 +26,8 @@ CARD = 256
 MAX_WIDTH = 2048
 MIN_COLS = 6
 ITALIC_SHEAR = 0.2
+# the tallest accented capitals, so every header line reserves the same room above the caps
+ACCENT_REFERENCE = "ÁÂÃÉÊÍÓÔÕÚÇ"
 BACKGROUND = (20, 20, 20, 255)
 SUBTITLE = (150, 150, 150, 255)
 NICK = (225, 225, 225, 255)
@@ -41,6 +43,7 @@ TITLES = {
         "gliders": "GLIDERS",
         "emotes": "EMOTES",
         "mythics": "MYTHICS",
+        "from_shop": "FROM SHOP",
     },
     "pt-BR": {
         "locker": "ARMÁRIO",
@@ -50,6 +53,7 @@ TITLES = {
         "gliders": "ASAS-DELTAS",
         "emotes": "GESTOS",
         "mythics": "MÍTICOS",
+        "from_shop": "DA LOJA",
     },
 }
 MYTHIC_CATEGORIES = ["skins", "backpacks", "pickaxes", "gliders", "emotes"]
@@ -128,13 +132,20 @@ def _card(item: dict, icon: bytes | None) -> Image.Image:
     return card
 
 
-def _italic(text: str, font: ImageFont.FreeTypeFont, fill) -> Image.Image:
-    left, top, right, bottom = font.getbbox(text)
-    w, h = right - left, bottom - top
+def _italic(text: str, font: ImageFont.FreeTypeFont, fill, box: str) -> tuple[Image.Image, int, int]:
+    """Returns (layer, box_offset, box_height). The text is laid out by the box of the reference string `box`,
+    not by its own glyphs, so "LOCKER" and "ARMÁRIO" sit in the same place: place the layer at
+    y - box_offset to put the top of that box at y."""
+    left, _, right, _ = font.getbbox(text, anchor="ls")
+    room_top = font.getbbox(ACCENT_REFERENCE, anchor="ls")[1]
+    room_bottom = font.getbbox(ACCENT_REFERENCE + "QJ(),", anchor="ls")[3]
+    _, box_top, _, box_bottom = font.getbbox(box, anchor="ls")
+    w, h = right - left, room_bottom - room_top
     shift = int(h * ITALIC_SHEAR)
     layer = Image.new("RGBA", (w + shift, h), (0, 0, 0, 0))
-    ImageDraw.Draw(layer).text((-left, -top), text, font=font, fill=fill)
-    return layer.transform(layer.size, Image.Transform.AFFINE, (1, ITALIC_SHEAR, -shift, 0, 1, 0), Image.Resampling.BICUBIC)
+    ImageDraw.Draw(layer).text((-left, -room_top), text, font=font, fill=fill, anchor="ls")
+    layer = layer.transform(layer.size, Image.Transform.AFFINE, (1, ITALIC_SHEAR, -shift, 0, 1, 0), Image.Resampling.BICUBIC)
+    return layer, box_top - room_top, box_bottom - box_top
 
 
 def _scaled(path: Path, height: int) -> Image.Image:
@@ -159,7 +170,7 @@ def _logo(height: int) -> Image.Image:
     return logo
 
 
-def _header(width: int, height: int, category: str, count: int, display_name: str, language: str) -> Image.Image:
+def _header(width: int, height: int, category: str, count: int, shop_count: int, display_name: str, language: str) -> Image.Image:
     header = Image.new("RGBA", (width, height), BACKGROUND)
     draw = ImageDraw.Draw(header)
     pad = height // 8
@@ -179,12 +190,16 @@ def _header(width: int, height: int, category: str, count: int, display_name: st
     x += slant + bar_w + pad
 
     titles = TITLES[language]
-    title = _italic(titles["locker"], _font(int(height * 0.46)), "white")
-    subtitle = _italic(f"{titles[category]} ({count})", _font(int(height * 0.27)), SUBTITLE)
+    # fixed reference boxes: the title always keeps an accent's room above it (as in "ARMÁRIO") and the
+    # subtitle the height of its parentheses, so the lines sit in the same place in every language
+    title, title_offset, title_h = _italic(titles["locker"], _font(int(height * 0.46)), "white", box="ÁH")
+    subtitle, subtitle_offset, subtitle_h = _italic(
+        f"{titles[category]} ({count}) · {shop_count} {titles['from_shop']}", _font(int(height * 0.27)), SUBTITLE, box="H()"
+    )
     gap = height // 14
-    top = (height - title.height - gap - subtitle.height) // 2
-    header.alpha_composite(title, (x, top))
-    header.alpha_composite(subtitle, (x, top + title.height + gap))
+    top = (height - title_h - gap - subtitle_h) // 2
+    header.alpha_composite(title, (x, top - title_offset))
+    header.alpha_composite(subtitle, (x, top + title_h + gap - subtitle_offset))
     left_end = x + max(title.width, subtitle.width) + 2 * pad
 
     logo = _logo(int(height * 0.42))
@@ -211,7 +226,8 @@ def _compose(category: str, items: list, icons: list, display_name: str, languag
     width = cols * (cell + gap) + gap
     header_h = max(120, width // 12)
     image = Image.new("RGBA", (width, header_h + rows * (cell + gap) + gap), BACKGROUND)
-    image.alpha_composite(_header(width, header_h, category, len(items), display_name, language))
+    shop_count = sum(1 for item in items if item.get("from_shop"))
+    image.alpha_composite(_header(width, header_h, category, len(items), shop_count, display_name, language))
 
     for idx, (item, icon) in enumerate(zip(items, icons)):
         card = _card(item, icon)

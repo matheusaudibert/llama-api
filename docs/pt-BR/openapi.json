@@ -961,6 +961,24 @@
             "title": "Is Mythic",
             "description": "Item raro/OG: de uma lista de raros que não volta à loja há 2 anos, ou com o estilo exclusivo dos donos originais."
           },
+          "from_shop": {
+            "type": "boolean",
+            "title": "From Shop",
+            "description": "Vendido na loja de itens pelo menos uma vez. Itens de passe de batalha, pacotes e promoções não são.",
+            "default": false
+          },
+          "estimated_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Price",
+            "description": "Preço estimado na loja de itens, em V-Bucks, pelo preço de costume do tipo e da raridade. Nulo quando o item não é da loja ou o tipo não é vendido sozinho."
+          },
           "in_catalog": {
             "type": "boolean",
             "title": "In Catalog",
@@ -1246,6 +1264,24 @@
             "title": "Is Mythic",
             "description": "Item raro/OG: de uma lista de raros que não volta à loja há 2 anos, ou com o estilo exclusivo dos donos originais."
           },
+          "from_shop": {
+            "type": "boolean",
+            "title": "From Shop",
+            "description": "Vendido na loja de itens pelo menos uma vez. Itens de passe de batalha, pacotes e promoções não são.",
+            "default": false
+          },
+          "estimated_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Price",
+            "description": "Preço estimado na loja de itens, em V-Bucks, pelo preço de costume do tipo e da raridade. Nulo quando o item não é da loja ou o tipo não é vendido sozinho."
+          },
           "in_catalog": {
             "type": "boolean",
             "title": "In Catalog",
@@ -1365,6 +1401,10 @@
             "$ref": "#/components/schemas/LockerCounts",
             "description": "Quantidade de itens por categoria."
           },
+          "shop": {
+            "$ref": "#/components/schemas/ShopSummary",
+            "description": "Itens da loja de itens e o valor estimado deles."
+          },
           "skins": {
             "items": {
               "$ref": "#/components/schemas/Cosmetic"
@@ -1432,6 +1472,7 @@
         "type": "object",
         "required": [
           "counts",
+          "shop",
           "skins",
           "backpacks",
           "pickaxes",
@@ -1665,6 +1706,25 @@
           "items"
         ],
         "title": "RenderRequest"
+      },
+      "ShopSummary": {
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/LockerCounts",
+            "description": "Itens vendidos na loja de itens, por categoria."
+          },
+          "estimated_vbucks": {
+            "type": "integer",
+            "title": "Estimated Vbucks",
+            "description": "Soma do `estimated_price` de todos os itens da loja: um valor aproximado do armário, não o que foi pago."
+          }
+        },
+        "type": "object",
+        "required": [
+          "counts",
+          "estimated_vbucks"
+        ],
+        "title": "ShopSummary"
       },
       "ValidationError": {
         "properties": {
