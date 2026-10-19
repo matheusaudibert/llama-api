@@ -682,18 +682,6 @@
             "title": "Minor Verified",
             "description": "Whether the account has parental controls / minor verification."
           },
-          "account_created": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Account Created",
-            "description": "Epic account creation date (ISO 8601)."
-          },
           "profile_created": {
             "anyOf": [
               {
@@ -704,7 +692,7 @@
               }
             ],
             "title": "Profile Created",
-            "description": "Fortnite profile creation date (ISO 8601)."
+            "description": "When the account started playing Fortnite: the Fortnite profile creation date (ISO 8601). Epic does not share the Epic account creation date."
           },
           "last_login": {
             "anyOf": [
@@ -739,6 +727,18 @@
             ],
             "title": "Last Display Name Change",
             "description": "Last display name change (ISO 8601)."
+          },
+          "display_name_change_available_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name Change Available At",
+            "description": "When a locked display name can be changed again (ISO 8601). Null when it can be changed now."
           },
           "can_change_email": {
             "anyOf": [

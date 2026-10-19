@@ -682,18 +682,6 @@
             "title": "Minor Verified",
             "description": "Se a conta tem controle parental / verificação de menor."
           },
-          "account_created": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Account Created",
-            "description": "Criação da conta Epic (ISO 8601)."
-          },
           "profile_created": {
             "anyOf": [
               {
@@ -704,7 +692,7 @@
               }
             ],
             "title": "Profile Created",
-            "description": "Criação do perfil no Fortnite (ISO 8601)."
+            "description": "Quando a conta começou a jogar Fortnite: a data de criação do perfil do Fortnite (ISO 8601). A Epic não informa a data de criação da conta Epic."
           },
           "last_login": {
             "anyOf": [
@@ -739,6 +727,18 @@
             ],
             "title": "Last Display Name Change",
             "description": "Data da última troca de nick (ISO 8601)."
+          },
+          "display_name_change_available_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name Change Available At",
+            "description": "Quando um nick bloqueado poderá ser trocado de novo (ISO 8601). Nulo quando já pode ser trocado."
           },
           "can_change_email": {
             "anyOf": [

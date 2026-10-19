@@ -254,12 +254,13 @@ async def account_summary(session: Session = Depends(logged_session)):
         "country": account.get("country"),
         "tfa_enabled": account.get("tfaEnabled", False),
         "minor_verified": account.get("minorVerified", False),
-        "account_created": account.get("created"),
+        # Epic does not send the account creation date to this client; the Fortnite profile date is the closest
         "profile_created": common_core.get("created"),
         "last_login": account.get("lastLogin"),
         "can_change_display_name": account.get("canUpdateDisplayName", False),
         "display_name_changes": account.get("numberOfDisplayNameChanges", 0),
         "last_display_name_change": account.get("lastDisplayNameChange"),
+        "display_name_change_available_at": None if account.get("canUpdateDisplayName") else account.get("canUpdateDisplayNameNext"),
         "can_change_email": email_info.get("canUpdateEmail"),
         "last_email_change": email_info.get("lastEmailUpdate"),
         # Epic only locks the email for a while after a change; no date when it can be changed now

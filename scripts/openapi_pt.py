@@ -44,8 +44,6 @@ PT = {
     'Country code (ISO 3166-1 alpha-2).': 'Código do país (ISO 3166-1 alpha-2).',
     'Whether two-factor authentication is on.': 'Se a autenticação de dois fatores está ativa.',
     'Whether the account has parental controls / minor verification.': 'Se a conta tem controle parental / verificação de menor.',
-    'Epic account creation date (ISO 8601).': 'Criação da conta Epic (ISO 8601).',
-    'Fortnite profile creation date (ISO 8601).': 'Criação do perfil no Fortnite (ISO 8601).',
     'Total V-Bucks across all sources.': 'Total de V-Bucks somando todas as fontes.',
     'Every platform or sign-in provider linked to the account, as Epic reports it (psn, xbl, nintendo, steam, github, twitch, google, apple…).': 'Todas as plataformas e provedores de login vinculados à conta, como a Epic informa (psn, xbl, nintendo, steam, github, twitch, google, apple…).',
     'Wins summed over all past seasons.': 'Soma das vitórias de todas as temporadas passadas.',
@@ -102,4 +100,6 @@ PT = {
     'Items sold in the item shop, per category.': 'Itens vendidos na loja de itens, por categoria.',
     'Sum of `estimated_price` over every shop item: a rough value of the locker, not what was paid.': 'Soma do `estimated_price` de todos os itens da loja: um valor aproximado do armário, não o que foi pago.',
     'Items from the item shop and their estimated value.': 'Itens da loja de itens e o valor estimado deles.',
+    'When the account started playing Fortnite: the Fortnite profile creation date (ISO 8601). Epic does not share the Epic account creation date.': 'Quando a conta começou a jogar Fortnite: a data de criação do perfil do Fortnite (ISO 8601). A Epic não informa a data de criação da conta Epic.',
+    'When a locked display name can be changed again (ISO 8601). Null when it can be changed now.': 'Quando um nick bloqueado poderá ser trocado de novo (ISO 8601). Nulo quando já pode ser trocado.',
 }
